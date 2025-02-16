@@ -126,7 +126,7 @@
                 let errorElement = document.getElementById(`error${i}`);
 
                 if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
-                    errorElement.innerText = "Invalid marks";
+                    errorElement.innerText = "Please enter a number ≤ " + (i === 9 ? "100" : "80");
                     hasError = true;
                 } else {
                     errorElement.innerText = "";
@@ -137,25 +137,10 @@
             if (hasError) return;
 
             let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
-            let categoryAverages = [
-                (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3,
-                updatedMarks[2],
-                (updatedMarks[4] + updatedMarks[5]) / 2,
-                (updatedMarks[6] + updatedMarks[7]) / 2,
-                updatedMarks[8],
-                updatedMarks[9]
-            ];
-            categoryAverages.sort((a, b) => b - a);
-            let percentage = (categoryAverages.slice(0, 5).reduce((a, b) => a + b, 0) / 500) * 100;
-            
-            let resultHTML = `<h3>${name}: ${percentage.toFixed(2)}%</h3><ul>`;
-            subjects.forEach((subj, i) => {
-                resultHTML += `<li>${subj}: ${marks[i]}</li>`;
-            });
-            resultHTML += "</ul>";
+            let averageMarks = updatedMarks.reduce((a, b) => a + b, 0) / subjects.length;
             
             let resultBox = document.getElementById("results");
-            resultBox.innerHTML = resultHTML;
+            resultBox.innerHTML = `<h3>${name}'s Average Marks: ${averageMarks.toFixed(2)}</h3>`;
             resultBox.style.display = "block";
         }
 
