@@ -1,77 +1,171 @@
-<script type="module">
-    // Existing imports and firebase initialization...
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICSE Marks Calculator</title>
+    <style>
+        /* Your styling here (unchanged from your original code) */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>ICSE Marks Calculator</h2>
+        <input type="text" id="name" placeholder="Enter your name">
+        <div id="subjects" class="subjects-container"></div>
+        <button id="calculate-btn">Calculate</button>
+        <button id="leaderboard-btn">Show Leaderboard</button>
+        <div id="results" class="results"></div>
+    </div>
+    <div id="leaderboard"></div>
 
-    async function calculate() {
-        let name = document.getElementById("name").value.trim();
-        if (!name) {
-            alert("Enter your name!");
-            return;
-        }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
-        let totalMarks = 0, maxMarks = 0;
-        let subjectMarks = {
-            Science: 0,
-            Maths: 0,
-            English: 0,
-            SocialScience: 0,
-            SecondLanguage: 0,
-            Computers: 0
+        const firebaseConfig = {
+            apiKey: "AIzaSyAQr2Y8fFW3hMPIa0qaocDumhzfVwkDx_U",
+            authDomain: "edith-a5bd8.firebaseapp.com",
+            projectId: "edith-a5bd8",
+            storageBucket: "edith-a5bd8.firebasestorage.app",
+            messagingSenderId: "990954143521",
+            appId: "1:990954143521:web:ea3c8df9ed9cd0185c8860"
         };
 
-        // Get marks and calculate totals
-        for (let i = 0; i < 10; i++) {
-            let input = document.getElementById(`mark${i}`);
-            let value = parseInt(input.value);
-            if (isNaN(value) || value < 0 || value > input.max) {
-                alert("Invalid marks entered!");
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let currentUser = null;
+
+        function signIn() {
+            signInAnonymously(auth).then((result) => {
+                currentUser = result.user;
+                document.getElementById("name").disabled = false;
+            }).catch((error) => {
+                console.error("Anonymous login failed: ", error);
+            });
+        }
+
+        function createInputs() {
+            const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
+            let subjectsContainer = document.getElementById("subjects");
+            subjectsContainer.innerHTML = "";
+
+            subjects.forEach((subj, i) => {
+                let div = document.createElement("div");
+                let label = document.createElement("label");
+                label.innerText = subj + ": ";
+
+                let input = document.createElement("input");
+                input.type = "number";
+                input.id = `mark${i}`;
+                input.min = 0;
+                input.max = i === 9 ? 100 : 80;
+                
+                div.appendChild(label);
+                div.appendChild(input);
+                subjectsContainer.appendChild(div);
+            });
+        }
+
+        async function calculate() {
+            let name = document.getElementById("name").value.trim();
+            if (!name) {
+                alert("Enter your name!");
                 return;
             }
 
-            if (i < 3) subjectMarks.Science += value; // Physics, Chemistry, Biology
-            if (i === 2) subjectMarks.Maths = value; // Maths
-            if (i < 6 && i > 3) subjectMarks.SocialScience += value; // History, Geography
-            if (i === 6 || i === 7) subjectMarks.English += value; // English-1, English-2
-            if (i === 8) subjectMarks.SecondLanguage = value; // Second Language
-            if (i === 9) subjectMarks.Computers = value; // Computers
+            let totalMarks = 0, maxMarks = 0;
+            let subjectMarks = {
+                Science: 0,
+                Maths: 0,
+                English: 0,
+                SocialScience: 0,
+                SecondLanguage: 0,
+                Computers: 0
+            };
 
-            totalMarks += value;
-            maxMarks += parseInt(input.max);
+            for (let i = 0; i < 10; i++) {
+                let input = document.getElementById(`mark${i}`);
+                let value = parseInt(input.value);
+                if (isNaN(value) || value < 0 || value > input.max) {
+                    alert("Invalid marks entered!");
+                    return;
+                }
+
+                if (i < 3) subjectMarks.Science += value; // Physics, Chemistry, Biology
+                if (i === 2) subjectMarks.Maths = value; // Maths
+                if (i < 6 && i > 3) subjectMarks.SocialScience += value; // History, Geography
+                if (i === 6 || i === 7) subjectMarks.English += value; // English-1, English-2
+                if (i === 8) subjectMarks.SecondLanguage = value; // Second Language
+                if (i === 9) subjectMarks.Computers = value; // Computers
+
+                totalMarks += value;
+                maxMarks += parseInt(input.max);
+            }
+
+            let averages = {
+                Science: (subjectMarks.Science / 3).toFixed(2),
+                Maths: subjectMarks.Maths.toFixed(2),
+                English: (subjectMarks.English / 2).toFixed(2),
+                SocialScience: (subjectMarks.SocialScience / 2).toFixed(2),
+                SecondLanguage: subjectMarks.SecondLanguage.toFixed(2),
+                Computers: subjectMarks.Computers.toFixed(2)
+            };
+
+            let percentage = ((totalMarks / maxMarks) * 100).toFixed(2);
+
+            // Display Result
+            let resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = `<h3>${name}'s Result</h3>
+                                    <p>Percentage: ${percentage}%</p>
+                                    <p>Science Average: ${averages.Science}</p>
+                                    <p>Maths: ${averages.Maths}</p>
+                                    <p>English Average: ${averages.English}</p>
+                                    <p>Social Science Average: ${averages.SocialScience}</p>
+                                    <p>Second Language: ${averages.SecondLanguage}</p>
+                                    <p>Computers: ${averages.Computers}</p>`;
+            resultsDiv.style.display = "block";
+
+            // Store only total percentage in Firestore
+            try {
+                await setDoc(doc(collection(db, "leaderboard"), name), {
+                    name: name,
+                    totalPercentage: percentage
+                });
+            } catch (error) {
+                console.error("Error saving to leaderboard: ", error);
+            }
         }
 
-        // Calculate category averages
-        let averages = {
-            Science: (subjectMarks.Science / 3).toFixed(2),
-            Maths: subjectMarks.Maths.toFixed(2),
-            English: (subjectMarks.English / 2).toFixed(2),
-            SocialScience: (subjectMarks.SocialScience / 2).toFixed(2),
-            SecondLanguage: subjectMarks.SecondLanguage.toFixed(2),
-            Computers: subjectMarks.Computers.toFixed(2)
-        };
-
-        let percentage = ((totalMarks / maxMarks) * 100).toFixed(2);
-
-        // Display Result
-        let resultsDiv = document.getElementById("results");
-        resultsDiv.innerHTML = `<h3>${name}'s Result</h3>
-                                <p>Percentage: ${percentage}%</p>
-                                <p>Science Average: ${averages.Science}</p>
-                                <p>Maths: ${averages.Maths}</p>
-                                <p>English Average: ${averages.English}</p>
-                                <p>Social Science Average: ${averages.SocialScience}</p>
-                                <p>Second Language: ${averages.SecondLanguage}</p>
-                                <p>Computers: ${averages.Computers}</p>`;
-        resultsDiv.style.display = "block";
-
-        // Store only final percentage in Firestore
-        try {
-            await setDoc(doc(collection(db, "leaderboard"), name), {
-                name: name,
-                totalPercentage: percentage
+        async function showLeaderboard() {
+            const leaderboard = document.getElementById("leaderboard");
+            leaderboard.innerHTML = "<h3>Leaderboard</h3><ul>";
+            
+            const querySnapshot = await getDocs(collection(db, "leaderboard"));
+            let scores = [];
+            
+            querySnapshot.forEach((doc) => {
+                scores.push(doc.data());
             });
-        } catch (error) {
-            console.error("Error saving to leaderboard: ", error);
-        }
-    }
 
-    // Other existing functions and window.onload...
-</script>
+            scores.sort((a, b) => b.totalPercentage - a.totalPercentage);
+
+            scores.forEach((entry) => {
+                leaderboard.innerHTML += `<li>${entry.name}: ${entry.totalPercentage}%</li>`;
+            });
+
+            leaderboard.innerHTML += "</ul>";
+            leaderboard.style.display = "block";
+        }
+
+        window.onload = function () {
+            signIn();
+            createInputs();
+            document.getElementById("calculate-btn").addEventListener("click", calculate);
+            document.getElementById("leaderboard-btn").addEventListener("click", showLeaderboard);
+        };
+    </script>
+</body>
+</html>
