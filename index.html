@@ -142,14 +142,14 @@
 <body>
     <div class="container">
         <h2>ICSE Marks Calculator</h2>
-        <input type="text" id="name" placeholder="Enter your name">
+        <input type="text" id="name" placeholder="Enter your name" disabled>
         <div id="subjects" class="subjects-container"></div>
         <button id="calculate-btn">Calculate</button>
         <button id="leaderboard-btn">Show Leaderboard</button>
         <div id="results" class="results"></div>
     </div>
     <div id="leaderboard"></div>
-    <div class="footer">Made by Vir</div>
+    <div class="footer">Made by Vir ♡</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -239,7 +239,14 @@
 
             // Display Result
             let resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = `<h3>${name}'s Result</h3><p>Percentage: ${percentage}%</p>`;
+            resultsDiv.innerHTML = `<h3>${name}'s Result</h3>
+                                    <p>Science Avg: ${averages[0].toFixed(2)}</p>
+                                    <p>Maths Avg: ${averages[1].toFixed(2)}</p>
+                                    <p>Social Science Avg: ${averages[2].toFixed(2)}</p>
+                                    <p>English Avg: ${averages[3].toFixed(2)}</p>
+                                    <p>Second Language Avg: ${averages[4].toFixed(2)}</p>
+                                    <p>Computers Avg: ${averages[5].toFixed(2)}</p>
+                                    <p><strong>Total Percentage: ${percentage}%</strong></p>`;
             resultsDiv.style.display = "block";
 
             // Store in Firestore
