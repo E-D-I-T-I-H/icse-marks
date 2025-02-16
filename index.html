@@ -1,173 +1,138 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICSE Marks Calculator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Enrique&display=swap" rel="stylesheet">
-    <style>
-        /* Your existing CSS... */
-    </style>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+/* General Reset and Font */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Enrique', sans-serif;
+}
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAQr2Y8fFW3hMPIa0qaocDumhzfVwkDx_U",
-            authDomain: "edith-a5bd8.firebaseapp.com",
-            projectId: "edith-a5bd8",
-            storageBucket: "edith-a5bd8.firebasestorage.app",
-            messagingSenderId: "990954143521",
-            appId: "1:990954143521:web:ea3c8df9ed9cd0185c8860"
-        };
+/* Body Styling */
+body {
+    background-color: #121212;
+    color: white;
+    text-align: center;
+    padding: 15px;
+}
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+/* Container for main content */
+.container {
+    max-width: 400px;
+    margin: auto;
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
 
-        let currentUser = null;
+/* Input and Buttons */
+input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 4px;
+    font-size: 16px;
+}
 
-        function signIn() {
-            signInAnonymously(auth).then((result) => {
-                currentUser = result.user;
-                document.getElementById("name").disabled = false;
-            }).catch((error) => {
-                console.error("Anonymous login failed: ", error);
-            });
-        }
+button {
+    margin-top: 10px;
+    padding: 12px;
+    background: #ff4c4c;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    border-radius: 4px;
+    transition: 0.3s ease-in-out;
+}
 
-        function createInputs() {
-            const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
-            let subjectsContainer = document.getElementById("subjects");
-            subjectsContainer.innerHTML = "";
+button:hover {
+    background: #ff1a1a;
+}
 
-            subjects.forEach((subj, i) => {
-                let div = document.createElement("div");
-                let label = document.createElement("label");
-                label.innerText = subj + ": ";
+/* Subject Section */
+.subjects-container {
+    text-align: left;
+    margin-top: 10px;
+}
 
-                let input = document.createElement("input");
-                input.type = "number";
-                input.id = `mark${i}`;
-                input.min = 0;
-                input.max = i === 9 ? 100 : 80;
-                
-                div.appendChild(label);
-                div.appendChild(input);
-                subjectsContainer.appendChild(div);
-            });
-        }
+.subjects-container div {
+    margin-bottom: 15px;
+}
 
-        async function calculate() {
-            let name = document.getElementById("name").value.trim();
-            if (!name) {
-                alert("Enter your name!");
-                return;
-            }
+.subjects-container label {
+    display: inline-block;
+    width: 150px;
+    text-align: left;
+    font-size: 16px;
+}
 
-            let totalMarks = 0, maxMarks = 0;
-            let categoryAverages = {
-                "Science": 0,
-                "Maths": 0,
-                "English": 0,
-                "Social Science": 0,
-                "Second Language": 0,
-                "Computers": 0
-            };
+.subjects-container input {
+    width: 100px;
+    padding: 8px;
+    font-size: 16px;
+}
 
-            // Calculate category averages
-            let scienceMarks = [
-                parseInt(document.getElementById('mark0').value) + 20, 
-                parseInt(document.getElementById('mark1').value) + 20, 
-                parseInt(document.getElementById('mark3').value) + 20
-            ];
-            categoryAverages["Science"] = ((scienceMarks.reduce((a, b) => a + b, 0)) / 3).toFixed(2);
+/* Result Display */
+.results {
+    background: #2a2a2a;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    display: none;
+    font-size: 18px;
+}
 
-            categoryAverages["Maths"] = parseInt(document.getElementById('mark2').value) + 20;
-            categoryAverages["English"] = ((parseInt(document.getElementById('mark6').value) + parseInt(document.getElementById('mark7').value)) / 2 + 20).toFixed(2);
-            categoryAverages["Social Science"] = ((parseInt(document.getElementById('mark4').value) + parseInt(document.getElementById('mark5').value)) / 2 + 20).toFixed(2);
-            categoryAverages["Second Language"] = parseInt(document.getElementById('mark8').value) + 20;
-            categoryAverages["Computers"] = ((parseInt(document.getElementById('mark9').value) + 100) / 2).toFixed(2);
+/* Leaderboard Styling */
+#leaderboard {
+    position: fixed;
+    top: 70px;
+    left: 10px;
+    width: 250px;
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+    display: none;
+}
 
-            // Calculate total marks
-            for (let i = 0; i < 10; i++) {
-                let input = document.getElementById(`mark${i}`);
-                let value = parseInt(input.value);
-                if (isNaN(value) || value < 0 || value > input.max) {
-                    alert("Invalid marks entered!");
-                    return;
-                }
-                totalMarks += value;
-                maxMarks += parseInt(input.max);
-            }
+#leaderboard ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
-            let percentage = ((totalMarks / maxMarks) * 100).toFixed(2);
+#leaderboard li {
+    margin: 5px 0;
+    font-size: 16px;
+}
 
-            // Display Result
-            let resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = `<h3>${name}'s Result</h3><p>Percentage: ${percentage}%</p>`;
-            Object.keys(categoryAverages).forEach(cat => {
-                resultsDiv.innerHTML += `<p>${cat}: ${categoryAverages[cat]}</p>`;
-            });
-            resultsDiv.style.display = "block";
+/* Center everything and make it compact */
+.container h2 {
+    margin-bottom: 15px;
+    font-size: 22px;
+}
 
-            // Store in Firestore
-            try {
-                await setDoc(doc(collection(db, "leaderboard"), name), {
-                    name: name,
-                    totalPercentage: percentage
-                });
-            } catch (error) {
-                console.error("Error saving to leaderboard: ", error);
-            }
-        }
+input[type="text"], input[type="number"], button {
+    font-size: 16px;
+}
 
-        async function showLeaderboard() {
-            const leaderboard = document.getElementById("leaderboard");
-            leaderboard.innerHTML = "<h3>Leaderboard</h3><ul>";
-            
-            const querySnapshot = await getDocs(collection(db, "leaderboard"));
-            let scores = [];
-            
-            querySnapshot.forEach((doc) => {
-                scores.push(doc.data());
-            });
+#leaderboard-btn, #calculate-btn {
+    font-size: 16px;
+}
 
-            if (scores.length === 0) {
-                leaderboard.innerHTML += "<li>No data available</li>";
-                leaderboard.style.display = "block";
-                return;
-            }
+/* Adjustments for better readability */
+body, .container, #results, #leaderboard {
+    max-width: 450px;
+    margin: auto;
+}
 
-            scores.sort((a, b) => b.totalPercentage - a.totalPercentage);
-
-            scores.forEach((entry) => {
-                leaderboard.innerHTML += `<li>${entry.name}: ${entry.totalPercentage}%</li>`;
-            });
-
-            leaderboard.innerHTML += "</ul>";
-            leaderboard.style.display = "block";
-        }
-
-        window.onload = function () {
-            signIn();
-            createInputs();
-            document.getElementById("calculate-btn").addEventListener("click", calculate);
-            document.getElementById("leaderboard-btn").addEventListener("click", showLeaderboard);
-        };
-    </script>
-</head>
-<body>
-    <div class="container">
-        <h2>ICSE Marks Calculator</h2>
-        <input type="text" id="name" placeholder="Enter your name">
-        <div id="subjects"></div>
-        <button id="calculate-btn">Calculate</button>
-        <button id="leaderboard-btn">Show Leaderboard</button>
-        
-        <div id="results" class="results"></div>
-        <div id="leaderboard"></div>
-    </div>
-</body>
-</html>
+/* Add smooth transition for UI elements */
+button, input {
+    transition: all 0.3s ease;
+}
