@@ -146,16 +146,16 @@
                 scores.push(value);
             }
 
-            let scienceAvg = (scores[0] + scores[1] + scores[3]) / 3;
-            let mathsAvg = scores[2];
-            let socialAvg = (scores[4] + scores[5]) / 2;
-            let englishAvg = (scores[6] + scores[7]) / 2;
-            let secondLangAvg = scores[8];
-            let computersAvg = scores[9];
+            let scienceAvg = ((scores[0] + scores[1] + scores[3]) / 3).toFixed(2);
+            let mathsAvg = scores[2].toFixed(2);
+            let socialAvg = ((scores[4] + scores[5]) / 2).toFixed(2);
+            let englishAvg = ((scores[6] + scores[7]) / 2).toFixed(2);
+            let secondLangAvg = scores[8].toFixed(2);
+            let computersAvg = scores[9].toFixed(2);
 
-            let totalPercentage = ((scienceAvg + mathsAvg + socialAvg + englishAvg + secondLangAvg + computersAvg) / 6).toFixed(2);
+            let totalPercentage = ((parseFloat(scienceAvg) + parseFloat(mathsAvg) + parseFloat(socialAvg) + parseFloat(englishAvg) + parseFloat(secondLangAvg) + parseFloat(computersAvg)) / 6).toFixed(2);
             
-            document.getElementById("results").innerHTML = `Total Percentage: ${totalPercentage}%`;
+            document.getElementById("results").innerHTML = `Total Percentage: ${totalPercentage}% <br> Science Avg: ${scienceAvg}% <br> Maths Avg: ${mathsAvg}% <br> Social Avg: ${socialAvg}% <br> English Avg: ${englishAvg}% <br> Second Language Avg: ${secondLangAvg}% <br> Computers Avg: ${computersAvg}%`;
             document.getElementById("results").style.display = "block";
             
             await setDoc(doc(db, "leaderboard", currentUser.uid), { name, totalPercentage });
