@@ -85,7 +85,8 @@
                 "Computers": updatedMarks[9]
             };
             
-            let totalPercentage = Object.values(categoryAverages).reduce((a, b) => a + b, 0) / 6;
+            let sortedAverages = Object.values(categoryAverages).sort((a, b) => b - a).slice(0, 5);
+            let totalPercentage = sortedAverages.reduce((a, b) => a + b, 0) / 5;
             
             let resultBox = document.getElementById("results");
             resultBox.innerHTML = `<h3>Total Percentage: ${totalPercentage.toFixed(2)}%</h3>`;
