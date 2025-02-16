@@ -6,157 +6,130 @@
     <title>ICSE Marks Calculator</title>
     <link href="https://fonts.googleapis.com/css2?family=Enrique&display=swap" rel="stylesheet">
     <style>
-        /* Reset margin and padding */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         /* Global Styles */
         body {
             font-family: 'Enrique', sans-serif;
-            background: #f4f6f8;
-            color: #333;
-            padding: 20px;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #ffffff;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            text-align: center;
+            background-color: #1e1e1e;
+            border-radius: 15px;
+            padding: 30px;
+            width: 500px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         h2 {
-            font-size: 28px;
-            color: #2f4f4f;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #ff4c4c;
+        }
+
+        .subject-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
             margin-bottom: 20px;
         }
 
-        input[type="text"],
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
+        .subject-column {
+            width: 45%;
+        }
+
+        .subject-column div {
             margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
         }
 
-        input[type="text"]:disabled {
-            background-color: #f0f0f0;
-        }
-
-        input[type="number"]:focus,
-        input[type="text"]:focus {
-            border-color: #4CAF50;
-        }
-
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
+        label {
             color: #fff;
-            background-color: #4CAF50;
-            border: none;
-            border-radius: 5px;
-            margin: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .error-message {
-            color: red;
-            font-size: 16px;
-            margin-top: 15px;
-        }
-
-        /* Footer styling */
-        .footer {
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-            color: #ff4c4c;
             font-size: 14px;
         }
 
-        /* Results section styling */
-        .results {
-            margin-top: 30px;
-            font-size: 18px;
-            color: #333;
+        input {
+            width: 100%;
+            padding: 12px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 8px;
+            font-size: 16px;
         }
 
-        .results h3 {
-            font-size: 22px;
-            color: #2f4f4f;
-            margin-bottom: 20px;
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff4c4c;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
         }
 
-        .results p {
-            margin-bottom: 10px;
-            font-size: 18px;
+        button:hover {
+            background-color: #ff6161;
         }
 
-        /* Leaderboard styling */
-        #leaderboard {
+        .error-message {
+            color: #ff4c4c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
             margin-top: 20px;
-            padding: 20px;
-            background-color: #f8f8f8;
-            border-radius: 5px;
+            color: #fff;
+            opacity: 0.6;
+        }
+
+        .results, #leaderboard {
             display: none;
+            margin-top: 20px;
         }
 
-        #leaderboard h3 {
-            font-size: 24px;
-            color: #2f4f4f;
+        .results p, #leaderboard ul {
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: center;
         }
 
-        #leaderboard ul {
-            list-style-type: none;
-            padding-left: 0;
+        .leaderboard-entry {
+            margin-bottom: 8px;
         }
 
-        #leaderboard li {
-            font-size: 18px;
-            padding: 5px;
-            margin: 5px 0;
-            background-color: #ffffff;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Responsive styles */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            button {
-                width: 100%;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>ICSE Marks Calculator</h2>
         <input type="text" id="name" placeholder="Enter your name" disabled>
-        <div id="subjects" class="subjects-container"></div>
+        <div id="subjects" class="subject-container">
+            <div class="subject-column" id="left-column"></div>
+            <div class="subject-column" id="right-column"></div>
+        </div>
         <button id="calculate-btn">Calculate</button>
         <button id="leaderboard-btn">Show Leaderboard</button>
         <div id="results" class="results"></div>
         <div id="error-message" class="error-message"></div>
     </div>
-    <div id="leaderboard"></div>
+    <div id="leaderboard" class="leaderboard"></div>
     <div class="footer">Made by Vir</div>
 
     <script type="module">
@@ -190,8 +163,8 @@
 
         function createInputs() {
             const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
-            let subjectsContainer = document.getElementById("subjects");
-            subjectsContainer.innerHTML = "";
+            let leftColumn = document.getElementById("left-column");
+            let rightColumn = document.getElementById("right-column");
 
             subjects.forEach((subj, i) => {
                 let div = document.createElement("div");
@@ -201,25 +174,29 @@
                 let input = document.createElement("input");
                 input.type = "number";
                 input.id = `mark${i}`;
-                
-                // Set input restrictions for subjects
+
                 if (subj === "Computers") {
-                    input.max = 100; // Computers max is 100
-                    input.min = 0; // Computers min is 0
+                    input.max = 100;
+                    input.min = 0;
                 } else {
-                    input.max = 80; // All other subjects max is 80
-                    input.min = 0; // Min for all is 0
+                    input.max = 80;
+                    input.min = 0;
                 }
 
                 div.appendChild(label);
                 div.appendChild(input);
-                subjectsContainer.appendChild(div);
+
+                if (i < 5) {
+                    leftColumn.appendChild(div);
+                } else {
+                    rightColumn.appendChild(div);
+                }
             });
         }
 
         function validateInputs() {
             const errorMessageDiv = document.getElementById("error-message");
-            errorMessageDiv.innerHTML = ""; // Reset error message
+            errorMessageDiv.innerHTML = ""; 
 
             let isValid = true;
             const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
@@ -248,7 +225,6 @@
         }
 
         async function calculate() {
-            // Reset error message
             document.getElementById("error-message").innerHTML = "";
 
             if (!validateInputs()) {
@@ -262,92 +238,26 @@
             }
 
             let averages = [];
-
-            // Add category averages after the modification (+20 rule)
             let physics = parseInt(document.getElementById("mark0").value) + 20;
             let chemistry = parseInt(document.getElementById("mark1").value) + 20;
             let biology = parseInt(document.getElementById("mark3").value) + 20;
-            let scienceAvg = (physics + chemistry + biology) / 3; // Science avg
+            let scienceAvg = (physics + chemistry + biology) / 3;
             averages.push(scienceAvg);
 
             let maths = parseInt(document.getElementById("mark2").value) + 20;
-            averages.push(maths); // Maths avg
+            averages.push(maths);
 
             let history = parseInt(document.getElementById("mark4").value) + 20;
             let geography = parseInt(document.getElementById("mark5").value) + 20;
-            let socialScienceAvg = (history + geography) / 2; // Social Science avg
+            let socialScienceAvg = (history + geography) / 2;
             averages.push(socialScienceAvg);
 
             let english1 = parseInt(document.getElementById("mark6").value) + 20;
             let english2 = parseInt(document.getElementById("mark7").value) + 20;
-            let englishAvg = (english1 + english2) / 2; // English avg
+            let englishAvg = (english1 + english2) / 2;
             averages.push(englishAvg);
 
             let secondLanguage = parseInt(document.getElementById("mark8").value);
-            averages.push(secondLanguage); // Second Language avg
+            averages.push(secondLanguage);
 
-            let computers = (parseInt(document.getElementById("mark9").value) + 100) / 2; // Computers avg
-            averages.push(computers);
-
-            // Sort averages in descending order
-            averages.sort((a, b) => b - a);
-
-            // Calculate total of top 5 averages
-            let finalTotal = averages.slice(0, 5).reduce((acc, avg) => acc + avg, 0);
-
-            // Calculate the final percentage
-            let percentage = ((finalTotal / 500) * 100).toFixed(2);
-
-            // Display Result
-            let resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = `<h3>${name}'s Result</h3>
-                                    <p>Science Avg: ${scienceAvg.toFixed(2)}</p>
-                                    <p>Maths Avg: ${maths.toFixed(2)}</p>
-                                    <p>Social Science Avg: ${socialScienceAvg.toFixed(2)}</p>
-                                    <p>English Avg: ${englishAvg.toFixed(2)}</p>
-                                    <p>Second Language Avg: ${secondLanguage.toFixed(2)}</p>
-                                    <p>Computers Avg: ${computers.toFixed(2)}</p>
-                                    <p><strong>Total Percentage: ${percentage}%</strong></p>`;
-            resultsDiv.style.display = "block";
-
-            // Store in Firestore
-            try {
-                await setDoc(doc(collection(db, "leaderboard"), name), {
-                    name: name,
-                    totalPercentage: percentage
-                });
-            } catch (error) {
-                console.error("Error saving to leaderboard: ", error);
-            }
-        }
-
-        async function showLeaderboard() {
-            const leaderboard = document.getElementById("leaderboard");
-            leaderboard.innerHTML = "<h3>Leaderboard</h3><ul>";
-
-            const querySnapshot = await getDocs(collection(db, "leaderboard"));
-            let scores = [];
-
-            querySnapshot.forEach((doc) => {
-                scores.push(doc.data());
-            });
-
-            scores.sort((a, b) => b.totalPercentage - a.totalPercentage);
-
-            scores.forEach((entry) => {
-                leaderboard.innerHTML += `<li>${entry.name}: ${entry.totalPercentage}%</li>`;
-            });
-
-            leaderboard.innerHTML += "</ul>";
-            leaderboard.style.display = "block";
-        }
-
-        window.onload = function () {
-            signIn();
-            createInputs();
-            document.getElementById("calculate-btn").addEventListener("click", calculate);
-            document.getElementById("leaderboard-btn").addEventListener("click", showLeaderboard);
-        };
-    </script>
-</body>
-</html>
+            let computers = (parseInt(document.getElementById("mark9").value) + 100) / 
