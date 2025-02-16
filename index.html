@@ -6,7 +6,6 @@
     <title>ICSE Marks Calculator</title>
     <link href="https://fonts.googleapis.com/css2?family=Enrique&display=swap" rel="stylesheet">
     <style>
-        /* General Reset and Font */
         * {
             margin: 0;
             padding: 0;
@@ -14,7 +13,6 @@
             font-family: 'Enrique', sans-serif;
         }
 
-        /* Body Styling */
         body {
             background-color: #121212;
             color: white;
@@ -22,7 +20,6 @@
             padding: 15px;
         }
 
-        /* Container for main content */
         .container {
             max-width: 400px;
             margin: auto;
@@ -33,8 +30,8 @@
             overflow: hidden;
         }
 
-        /* Input and Buttons */
-        input[type="text"], input[type="number"] {
+        input[type="text"],
+        input[type="number"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -62,7 +59,6 @@
             background: #ff1a1a;
         }
 
-        /* Subject Section */
         .subjects-container {
             text-align: left;
             margin-top: 10px;
@@ -85,7 +81,6 @@
             font-size: 16px;
         }
 
-        /* Result Display */
         .results {
             background: #2a2a2a;
             color: white;
@@ -96,7 +91,6 @@
             font-size: 18px;
         }
 
-        /* Leaderboard Styling */
         #leaderboard {
             position: fixed;
             top: 70px;
@@ -120,58 +114,42 @@
             font-size: 16px;
         }
 
+        /* Footer styling */
+        .footer {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            color: #ff4c4c;
+            font-size: 14px;
+        }
+
         /* Center everything and make it compact */
         .container h2 {
             margin-bottom: 15px;
             font-size: 22px;
         }
 
-        input[type="text"], input[type="number"], button {
-            font-size: 16px;
-        }
-
         #leaderboard-btn, #calculate-btn {
             font-size: 16px;
-        }
-
-        /* Adjustments for better readability */
-        body, .container, #results, #leaderboard {
-            max-width: 450px;
-            margin: auto;
         }
 
         /* Add smooth transition for UI elements */
         button, input {
             transition: all 0.3s ease;
         }
-
-        /* "Made by Vir" at the bottom right */
-        #footer {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.5);
-            font-family: 'Enrique', sans-serif;
-            font-weight: 400;
-            letter-spacing: 1px;
-            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>ICSE Marks Calculator</h2>
-        <input type="text" id="name" placeholder="Enter your name" disabled>
+        <input type="text" id="name" placeholder="Enter your name">
         <div id="subjects" class="subjects-container"></div>
         <button id="calculate-btn">Calculate</button>
         <button id="leaderboard-btn">Show Leaderboard</button>
         <div id="results" class="results"></div>
     </div>
     <div id="leaderboard"></div>
-
-    <!-- Footer Section with "Made by Vir" -->
-    <div id="footer">Made by Vir</div>
+    <div class="footer">Made by Vir</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -231,64 +209,37 @@
                 return;
             }
 
-            let totalMarks = 0, maxMarks = 0;
-            let categoryAverages = [];
+            let averages = [];
 
-            for (let i = 0; i < 10; i++) {
-                let input = document.getElementById(`mark${i}`);
-                let value = parseInt(input.value);
+            // Add category averages after the modification (+20 rule)
+            averages.push(((parseInt(document.getElementById("mark0").value) + 20) + 
+                           (parseInt(document.getElementById("mark1").value) + 20) + 
+                           (parseInt(document.getElementById("mark3").value) + 20)) / 3); // Science avg
 
-                if (isNaN(value) || value < 0 || value > input.max) {
-                    alert("Invalid marks entered!");
-                    return;
-                }
+            averages.push(parseInt(document.getElementById("mark2").value) + 20); // Maths avg
 
-                // Adding 20 to each subject (except Computers) for category average calculation
-                if (i !== 9) {
-                    value += 20;
-                }
+            averages.push(((parseInt(document.getElementById("mark4").value) + 20) + 
+                           (parseInt(document.getElementById("mark5").value) + 20)) / 2); // Social Science avg
 
-                totalMarks += value;
-                maxMarks += parseInt(input.max);
+            averages.push(((parseInt(document.getElementById("mark6").value) + 20) + 
+                           (parseInt(document.getElementById("mark7").value) + 20)) / 2); // English avg
 
-                // Calculate Category Averages
-                if (i === 0 || i === 1 || i === 3) { // Science subjects: Physics, Chemistry, Biology
-                    if (categoryAverages[0] === undefined) categoryAverages[0] = [];
-                    categoryAverages[0].push(value);
-                } else if (i === 2) { // Maths
-                    categoryAverages[1] = [value];
-                } else if (i === 4 || i === 5) { // Social Science: History, Geography
-                    if (categoryAverages[2] === undefined) categoryAverages[2] = [];
-                    categoryAverages[2].push(value);
-                } else if (i === 6 || i === 7) { // English
-                    if (categoryAverages[3] === undefined) categoryAverages[3] = [];
-                    categoryAverages[3].push(value);
-                } else if (i === 8) { // Second Language
-                    categoryAverages[4] = [value];
-                } else if (i === 9) { // Computers
-                    categoryAverages[5] = [(value + 100) / 2];
-                }
-            }
+            averages.push(parseInt(document.getElementById("mark8").value)); // Second Language avg
 
-            // Calculate average for each category
-            let averages = categoryAverages.map((category) => {
-                if (category && category.length > 0) {
-                    return (category.reduce((acc, curr) => acc + curr, 0) / category.length).toFixed(2);
-                }
-                return 0;
-            });
+            averages.push((parseInt(document.getElementById("mark9").value) + 100) / 2); // Computers avg
 
-            // Sort the category averages and take the top 5
-            averages.sort((a, b) => b - a); // Sorting in descending order
+            // Sort averages in descending order
+            averages.sort((a, b) => b - a);
 
-            // Calculate final total using the top 5 averages
-            let finalTotal = averages.slice(0, 5).reduce((acc, avg) => acc + parseFloat(avg), 0);
-            let percentage = ((finalTotal / 5) * 100).toFixed(2);
+            // Calculate total of top 5 averages
+            let finalTotal = averages.slice(0, 5).reduce((acc, avg) => acc + avg, 0);
+
+            // Calculate the final percentage
+            let percentage = ((finalTotal / 500) * 100).toFixed(2);
 
             // Display Result
             let resultsDiv = document.getElementById("results");
             resultsDiv.innerHTML = `<h3>${name}'s Result</h3><p>Percentage: ${percentage}%</p>`;
-            resultsDiv.innerHTML += `<p>Top 5 Averages: ${averages.slice(0, 5).join(", ")}</p>`;
             resultsDiv.style.display = "block";
 
             // Store in Firestore
