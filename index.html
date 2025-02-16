@@ -140,32 +140,31 @@
             let name = document.getElementById("name").value || "Anonymous";
             let scores = [];
             for (let i = 0; i < 10; i++) {
-                scores.push(parseInt(document.getElementById(`mark${i}`).value) || 0);
+                let value = parseInt(document.getElementById(`mark${i}`).value) || 0;
+                if (i !== 9) value += 20;
+                else value = (value + 100) / 2;
+                scores.push(value);
             }
-            let totalPercentage = (scores.reduce((a, b) => a + b, 0) / 10).toFixed(2);
+
+            let scienceAvg = (scores[0] + scores[1] + scores[3]) / 3;
+            let mathsAvg = scores[2];
+            let socialAvg = (scores[4] + scores[5]) / 2;
+            let englishAvg = (scores[6] + scores[7]) / 2;
+            let secondLangAvg = scores[8];
+            let computersAvg = scores[9];
+
+            let totalPercentage = ((scienceAvg + mathsAvg + socialAvg + englishAvg + secondLangAvg + computersAvg) / 6).toFixed(2);
+            
             document.getElementById("results").innerHTML = `Total Percentage: ${totalPercentage}%`;
             document.getElementById("results").style.display = "block";
             
             await setDoc(doc(db, "leaderboard", currentUser.uid), { name, totalPercentage });
         }
 
-        async function showLeaderboard() {
-            let leaderboardList = document.getElementById("leaderboard-list");
-            leaderboardList.innerHTML = "";
-            let querySnapshot = await getDocs(collection(db, "leaderboard"));
-            querySnapshot.forEach(doc => {
-                let li = document.createElement("li");
-                li.textContent = `${doc.data().name}: ${doc.data().totalPercentage}%`;
-                leaderboardList.appendChild(li);
-            });
-            document.getElementById("leaderboard").style.display = "block";
-        }
-
         window.onload = function () {
             signIn();
             createInputs();
             document.getElementById("calculate-btn").addEventListener("click", calculate);
-            document.getElementById("leaderboard-btn").addEventListener("click", showLeaderboard);
         };
     </script>
 </head>
@@ -175,12 +174,7 @@
         <input type="text" id="name" placeholder="Enter your name">
         <div id="subjects" class="subjects-container"></div>
         <button id="calculate-btn">Calculate</button>
-        <button id="leaderboard-btn">Leaderboard</button>
         <div id="results" class="results"></div>
-    </div>
-    <div id="leaderboard">
-        <h3>Leaderboard</h3>
-        <ul id="leaderboard-list"></ul>
     </div>
 </body>
 </html>
