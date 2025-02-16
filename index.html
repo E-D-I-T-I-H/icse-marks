@@ -142,18 +142,18 @@
         }
 
         function calculate() {
-            alert("Calculating scores...");
+            console.log("Calculating scores...");
         }
 
         function showLeaderboard() {
-            alert("Fetching leaderboard...");
+            console.log("Fetching leaderboard...");
         }
 
         window.onload = function () {
             signIn();
             createInputs();
-            document.querySelector("button[onclick='calculate()']").addEventListener("click", calculate);
-            document.querySelector("button[onclick='showLeaderboard()']").addEventListener("click", showLeaderboard);
+            document.getElementById("calculate-btn").addEventListener("click", calculate);
+            document.getElementById("leaderboard-btn").addEventListener("click", showLeaderboard);
         };
     </script>
 </head>
@@ -162,8 +162,8 @@
         <h2>ICSE Marks Calculator</h2>
         <input type="text" id="name" placeholder="Enter your name">
         <div id="subjects" class="subjects-container"></div>
-        <button>Calculate</button>
-        <button>Leaderboard</button>
+        <button id="calculate-btn">Calculate</button>
+        <button id="leaderboard-btn">Leaderboard</button>
         <div id="results" class="results"></div>
     </div>
     <div id="leaderboard">
