@@ -152,7 +152,8 @@
             let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
             
             let categoryAverages = {
-                "Science": (updatedMarks[0] + updatedMarks[1] + updatedMarks[2]) / 3,
+                "Science": (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3,
+                "Maths": updatedMarks[2],
                 "Social Studies": (updatedMarks[4] + updatedMarks[5]) / 2,
                 "English": (updatedMarks[6] + updatedMarks[7]) / 2,
                 "Second Language": updatedMarks[8],
