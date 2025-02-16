@@ -88,7 +88,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAQr2Y8fFW3hMPIa0qaocDumhzfVwkDx_U",
@@ -102,17 +102,16 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
 
         let currentUser = null;
 
         function signIn() {
-            signInWithPopup(auth, provider).then((result) => {
+            signInAnonymously(auth).then((result) => {
                 currentUser = result.user;
-                document.getElementById("name").value = currentUser.displayName;
+                document.getElementById("name").value = "Guest " + currentUser.uid.substring(0, 6);
                 document.getElementById("login-btn").style.display = "none";
             }).catch((error) => {
-                console.error("Login failed: ", error);
+                console.error("Anonymous login failed: ", error);
             });
         }
 
@@ -144,7 +143,7 @@
         }
 
         window.onload = function () {
-            document.getElementById("login-btn").addEventListener("click", signIn);
+            signIn();
             createInputs();
         };
     </script>
@@ -153,7 +152,7 @@
     <div class="container">
         <h2>ICSE Marks Calculator</h2>
         <input type="text" id="name" placeholder="Enter your name" disabled>
-        <button id="login-btn">Login with Google</button>
+        <button id="login-btn">Login</button>
         <div id="subjects" class="subjects-container"></div>
         <button onclick="calculate()">Calculate</button>
         <button onclick="showLeaderboard()">Leaderboard</button>
