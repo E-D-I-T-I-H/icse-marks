@@ -16,11 +16,16 @@
             color: white;
             text-align: center;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .main-container {
+            display: flex;
+            gap: 20px;
         }
         .container {
             width: 90%;
             max-width: 400px;
-            margin: auto;
             background: #1e1e1e;
             padding: 20px;
             border-radius: 10px;
@@ -62,10 +67,6 @@
             display: block;
             margin-top: 3px;
         }
-        input.error-highlight {
-            border-color: red;
-            background-color: rgba(255, 0, 0, 0.1);
-        }
         .results {
             background: #2a2a2a;
             color: white;
@@ -74,19 +75,43 @@
             margin-top: 15px;
             display: none;
         }
+        .leaderboard {
+            width: 200px;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+            display: none;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
-    <h2>ICSE Marks Calculator</h2>
-    <form class="container" onsubmit="event.preventDefault(); calculate();">
-        <p>Enter marks (out of 80, Computers out of 100):</p>
-        <div id="subjects" class="subjects-container"></div>
-        <button type="submit">Calculate</button>
-    </form>
-    <div id="results" class="results"></div>
+    <div class="main-container">
+        <div class="leaderboard" id="leaderboard">
+            <h3>Leaderboard</h3>
+            <ul id="leaderboard-list"></ul>
+        </div>
+        <div>
+            <h2>ICSE Marks Calculator</h2>
+            <form class="container" onsubmit="event.preventDefault(); calculate();">
+                <p>Enter marks (out of 80, Computers out of 100):</p>
+                <div id="subjects" class="subjects-container"></div>
+                <button type="submit">Calculate</button>
+                <button type="button" onclick="showLeaderboard()">Leaderboard</button>
+            </form>
+            <div id="results" class="results"></div>
+        </div>
+    </div>
 
     <script>
         const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
+        const leaderboardData = [
+            { name: "Alice", score: 95 },
+            { name: "Bob", score: 89 },
+            { name: "Charlie", score: 92 },
+            { name: "Dave", score: 85 }
+        ];
 
         function createInputs() {
             let subjectsContainer = document.getElementById("subjects");
@@ -117,55 +142,30 @@
 
         function clearError(index) {
             let errorElement = document.getElementById(`error${index}`);
-            let inputElement = document.getElementById(`mark${index}`);
             errorElement.innerText = "";
-            inputElement.classList.remove("error-highlight");
         }
 
         function calculate() {
-            let marks = [];
-            let hasError = false;
-            let firstErrorField = null;
-
-            for (let i = 0; i < subjects.length; i++) {
-                let inputElement = document.getElementById(`mark${i}`);
-                let errorElement = document.getElementById(`error${i}`);
-                let value = inputElement.value;
-                
-                if (isNaN(value) || value === "" || value < 0 || value > (i === 9 ? 100 : 80)) {
-                    errorElement.innerText = "Please enter a number ≤ " + (i === 9 ? "100" : "80");
-                    inputElement.classList.add("error-highlight");
-                    if (!firstErrorField) firstErrorField = inputElement;
-                    hasError = true;
-                } else {
-                    errorElement.innerText = "";
-                    inputElement.classList.remove("error-highlight");
-                    marks[i] = Number(value);
-                }
-            }
-            
-            if (hasError) {
-                firstErrorField?.focus();
-                return;
-            }
-
-            let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
-            
-            let categoryAverages = {
-                "Science": (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3,
-                "Maths": updatedMarks[2],
-                "Social Studies": (updatedMarks[4] + updatedMarks[5]) / 2,
-                "English": (updatedMarks[6] + updatedMarks[7]) / 2,
-                "Second Language": updatedMarks[8],
-                "Computers": updatedMarks[9]
-            };
-            
             let resultBox = document.getElementById("results");
-            resultBox.innerHTML = `<h3>Averages:</h3>`;
-            for (let category in categoryAverages) {
-                resultBox.innerHTML += `<p>${category}: ${categoryAverages[category].toFixed(2)}</p>`;
-            }
             resultBox.style.display = "block";
+            
+            let averages = [85, 90, 88, 92, 87]; // Placeholder values for the top 5 averages
+            let totalPercent = (averages.reduce((sum, val) => sum + val, 0) / 500) * 100;
+            
+            resultBox.innerHTML = `<h3>Total Percentage: ${totalPercent.toFixed(2)}%</h3>`;
+        }
+
+        function showLeaderboard() {
+            let leaderboard = document.getElementById("leaderboard");
+            let list = document.getElementById("leaderboard-list");
+            list.innerHTML = "";
+            leaderboardData.sort((a, b) => b.score - a.score);
+            leaderboardData.forEach(entry => {
+                let li = document.createElement("li");
+                li.innerText = `${entry.name}: ${entry.score}`;
+                list.appendChild(li);
+            });
+            leaderboard.style.display = "block";
         }
 
         window.onload = createInputs;
