@@ -117,7 +117,7 @@
         function createInputs() {
             const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
             let subjectsContainer = document.getElementById("subjects");
-            subjectsContainer.innerHTML = ""; 
+            subjectsContainer.innerHTML = "";
 
             subjects.forEach((subj, i) => {
                 let div = document.createElement("div");
@@ -139,6 +139,14 @@
                 div.appendChild(errorSpan);
                 subjectsContainer.appendChild(div);
             });
+        }
+
+        function calculate() {
+            alert("Calculate button clicked");
+        }
+
+        function showLeaderboard() {
+            alert("Leaderboard button clicked");
         }
 
         window.onload = function () {
