@@ -1,116 +1,142 @@
-import java.util.*;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICSE Marks Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        h2 {
+            margin-bottom: 10px;
+            font-size: 26px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+        }
+        .subject {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        input {
+            width: 60px;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+            text-align: center;
+        }
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            border: none;
+            background: #ff4c4c;
+            color: white;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #ff1a1a;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #222;
+            border-radius: 10px;
+        }
+        .hide {
+            display: none;
+        }
+    </style>
+</head>
+<body>
 
-public class MarksCalculator {
-    public static void main() {
-        Scanner scanner = new Scanner(System.in);
-        String[] subjects = {"Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"};
-        double[] marks = new double[10];
+    <h2>ICSE Marks Calculator</h2>
 
-        // Input Marks
-        System.out.println("\u001B[1;36mEnter marks obtained (out of 80 for most, 100 for Computers):\u001B[0m");
-        for (int i = 0; i < 10; i++) {
-            while (true) {
-                System.out.print("\u001B[1;32m" + subjects[i] + " - \u001B[0m");
-                while (!scanner.hasNextDouble()) {
-                    System.out.println("\u001B[1;31mInvalid input. Please enter a numeric value.\u001B[0m");
-                    System.out.print("\u001B[1;32m" + subjects[i] + " - \u001B[0m");
-                    scanner.next();
+    <div class="container">
+        <p>Enter marks (out of 80, Computers out of 100):</p>
+        <div id="subjects"></div>
+        <button onclick="calculate()">Calculate</button>
+    </div>
+
+    <div id="results" class="results hide"></div>
+
+    <script>
+        const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
+
+        function createInputs() {
+            let html = "";
+            subjects.forEach((subj, i) => {
+                html += `
+                    <div class="subject">
+                        <label>${subj}:</label>
+                        <input type="number" id="mark${i}" min="0" max="${i === 9 ? 100 : 80}">
+                    </div>`;
+            });
+            document.getElementById("subjects").innerHTML = html;
+        }
+
+        function calculate() {
+            let marks = [];
+            for (let i = 0; i < subjects.length; i++) {
+                let value = document.getElementById(`mark${i}`).value;
+                if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
+                    document.getElementById(`mark${i}`).style.border = "2px solid red";
+                    return;
                 }
-                marks[i] = scanner.nextDouble();
-                if ((i == 9 && marks[i] <= 100) || (i != 9 && marks[i] <= 80)) {
-                    break;
-                } else {
-                    System.out.println("\u001B[1;31mInvalid input. Please enter a valid mark.\u001B[0m");
-                }
+                document.getElementById(`mark${i}`).style.border = "none";
+                marks[i] = Number(value);
             }
+
+            let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
+            let scienceAvg = (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3;
+            let mathsAvg = updatedMarks[2];
+            let socialAvg = (updatedMarks[4] + updatedMarks[5]) / 2;
+            let englishAvg = (updatedMarks[6] + updatedMarks[7]) / 2;
+            let secondLangAvg = updatedMarks[8];
+            let computersAvg = updatedMarks[9];
+
+            let categoryAverages = [scienceAvg, mathsAvg, socialAvg, englishAvg, secondLangAvg, computersAvg];
+            categoryAverages.sort((a, b) => b - a);
+
+            let top5Sum = categoryAverages.slice(0, 5).reduce((a, b) => a + b, 0);
+            let percentage = (top5Sum / 500) * 100;
+
+            document.getElementById("results").innerHTML = `
+                <h3>Results:</h3>
+                <p>Science (PCB): ${scienceAvg.toFixed(2)}</p>
+                <p>Maths: ${mathsAvg.toFixed(2)}</p>
+                <p>Social Studies: ${socialAvg.toFixed(2)}</p>
+                <p>English: ${englishAvg.toFixed(2)}</p>
+                <p>Second Language: ${secondLangAvg.toFixed(2)}</p>
+                <p>Computers: ${computersAvg.toFixed(2)}</p>
+                <h3>Total Percentage: ${percentage.toFixed(2)}%</h3>
+            `;
+            document.getElementById("results").classList.remove("hide");
         }
 
-        // Allow user to modify marks
-        while (true) {
-            System.out.println("\n\u001B[1;34mDo you want to modify any marks? Enter subject number (1-10) or 0 to continue:\u001B[0m");
-            for (int i = 0; i < subjects.length; i++) {
-                System.out.println((i + 1) + ". " + subjects[i] + " - " + marks[i]);
-            }
-            int choice = scanner.nextInt();
-            if (choice == 0) break;
-            if (choice < 1 || choice > 10) {
-                System.out.println("\u001B[1;31mInvalid choice. Try again.\u001B[0m");
-                continue;
-            }
-            
-            // Get new valid input
-            while (true) {
-                System.out.print("\u001B[1;32mEnter new marks for " + subjects[choice - 1] + " - \u001B[0m");
-                while (!scanner.hasNextDouble()) {
-                    System.out.println("\u001B[1;31mInvalid input. Please enter a numeric value.\u001B[0m");
-                    System.out.print("\u001B[1;32mEnter new marks for " + subjects[choice - 1] + " - \u001B[0m");
-                    scanner.next();
-                }
-                double newMarks = scanner.nextDouble();
-                if ((choice - 1 == 9 && newMarks <= 100) || (choice - 1 != 9 && newMarks <= 80)) {
-                    marks[choice - 1] = newMarks;
-                    break;
-                } else {
-                    System.out.println("\u001B[1;31mInvalid input. Please enter a valid mark.\u001B[0m");
-                }
-            }
-        }
+        createInputs();
+    </script>
 
-        // Convert marks to out of 100
-        for (int i = 0; i < 9; i++) {
-            marks[i] += 20;
-        }
-        // Special handling for Computers
-        marks[9] = (marks[9] + 100) / 2;
-
-        // Calculate category averages
-        double scienceAvg = (marks[0] + marks[1] + marks[3]) / 3; // PCB
-        double mathsAvg = marks[2]; // Maths
-        double socialAvg = (marks[4] + marks[5]) / 2; // History & Geography
-        double englishAvg = (marks[6] + marks[7]) / 2; // English-1 & English-2
-        double secondLangAvg = marks[8]; // Second Language
-        double computersAvg = marks[9];
-
-        // Collect all subject averages
-        double[] categoryAverages = {scienceAvg, mathsAvg, socialAvg, englishAvg, secondLangAvg, computersAvg};
-
-        // Sort in descending order and pick the top 5
-        Arrays.sort(categoryAverages);
-        for (int i = 0, j = categoryAverages.length - 1; i < j; i++, j--) {
-            double temp = categoryAverages[i];
-            categoryAverages[i] = categoryAverages[j];
-            categoryAverages[j] = temp;
-        }
-        double top5Sum = 0;
-        for (int i = 0; i < 5; i++) {
-            top5Sum += categoryAverages[i];
-        }
-
-        // Calculate percentage
-        double percentage = (top5Sum / 500) * 100;
-        
-        // Display Results
-        System.out.println("\n\u001B[1;35mCalculated Averages:\u001B[0m");
-        System.out.printf("Science (PCB): \u001B[1;33m%.2f\u001B[0m\n", scienceAvg);
-        System.out.printf("Maths: \u001B[1;33m%.2f\u001B[0m\n", mathsAvg);
-        System.out.printf("Social Studies: \u001B[1;33m%.2f\u001B[0m\n", socialAvg);
-        System.out.printf("English: \u001B[1;33m%.2f\u001B[0m\n", englishAvg);
-        System.out.printf("Second Language: \u001B[1;33m%.2f\u001B[0m\n", secondLangAvg);
-        System.out.printf("Computers: \u001B[1;33m%.2f\u001B[0m\n", computersAvg);
-        
-        // Display the selected top 5 subjects
-        System.out.println("\n\u001B[1;36mTop 5 Averages Considered:\u001B[0m");
-        for (int i = 0; i < 5; i++) {
-            System.out.printf("\u001B[1;32m%.2f\u001B[0m\n", categoryAverages[i]);
-        }
-        
-        System.out.printf("\n\u001B[1;31mTotal Percentage: %.2f%%\u001B[0m\n", percentage);
-        
-        System.out.println("\nPress Enter to exit...");
-        scanner.nextLine(); // Consume newline
-        scanner.nextLine(); // Wait for user to press Enter
-        scanner.close();
-    }
-}
-
-
+</body>
+</html>
