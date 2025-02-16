@@ -4,6 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICSE Marks Calculator</title>
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAQr2Y8fFW3hMPIa0qaocDumhzfVwkDx_U",
+            authDomain: "edith-a5bd8.firebaseapp.com",
+            projectId: "edith-a5bd8",
+            storageBucket: "edith-a5bd8.firebasestorage.app",
+            messagingSenderId: "990954143521",
+            appId: "1:990954143521:web:ea3c8df9ed9cd0185c8860"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.calculate = async function () {
+            let marks = [];
+            let hasError = false;
+
+            for (let i = 0; i < subjects.length; i++) {
+                let value = document.getElementById(`mark${i}`).value;
+                let errorElement = document.getElementById(`error${i}`);
+
+                if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
+                    errorElement.innerText = "Please enter a valid number";
+                    hasError = true;
+                } else {
+                    errorElement.innerText = "";
+                    marks[i] = Number(value);
+                }
+            }
+
+            if (hasError) return;
+
+            let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
+
+            let categoryAverages = {
+                "Science": (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3,
+                "Maths": updatedMarks[2],
+                "Social Studies": (updatedMarks[4] + updatedMarks[5]) / 2,
+                "English": (updatedMarks[6] + updatedMarks[7]) / 2,
+                "Second Language": updatedMarks[8],
+                "Computers": updatedMarks[9]
+            };
+
+            let resultBox = document.getElementById("results");
+            resultBox.innerHTML = `<h3>Averages:</h3>`;
+            for (let category in categoryAverages) {
+                resultBox.innerHTML += `<p>${category}: ${categoryAverages[category].toFixed(2)}</p>`;
+            }
+            resultBox.style.display = "block";
+
+            let username = prompt("Enter your name for the leaderboard:");
+            if (username) {
+                await addDoc(collection(db, "leaderboard"), {
+                    name: username,
+                    score: categoryAverages["Science"] + categoryAverages["Maths"] + categoryAverages["Social Studies"] + categoryAverages["English"] + categoryAverages["Second Language"] + categoryAverages["Computers"]
+                });
+            }
+        };
+
+        window.showLeaderboard = async function () {
+            let leaderboard = document.getElementById("leaderboard");
+            leaderboard.style.display = "block";
+            let leaderboardList = document.getElementById("leaderboard-list");
+            leaderboardList.innerHTML = "";
+
+            let querySnapshot = await getDocs(collection(db, "leaderboard"));
+            let scores = [];
+            querySnapshot.forEach((doc) => {
+                scores.push(doc.data());
+            });
+            
+            scores.sort((a, b) => b.score - a.score);
+            scores.forEach((entry, index) => {
+                let li = document.createElement("li");
+                li.innerText = `${index + 1}. ${entry.name} - ${entry.score.toFixed(2)}`;
+                leaderboardList.appendChild(li);
+            });
+        };
+    </script>
     <style>
         * {
             margin: 0;
@@ -18,6 +103,9 @@
             padding: 20px;
             display: flex;
             justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
         }
         .container {
             width: 90%;
@@ -40,106 +128,32 @@
         button:hover {
             background: #ff1a1a;
         }
-        .subjects-container {
-            text-align: left;
-            margin-top: 10px;
-        }
-        .subjects-container div {
-            margin-bottom: 8px;
-        }
-        .subjects-container label {
-            display: inline-block;
-            width: 150px;
-        }
-        .subjects-container input {
-            width: 80px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .results {
-            background: #2a2a2a;
-            color: white;
+        .leaderboard-container {
+            width: 250px;
+            background: #1e1e1e;
             padding: 10px;
-            border-radius: 5px;
-            margin-top: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
             display: none;
+            text-align: left;
+        }
+        .leaderboard-container h3 {
+            text-align: center;
         }
     </style>
 </head>
-<body onload="createInputs();">
-    <div>
+<body>
+    <div class="leaderboard-container" id="leaderboard">
+        <h3>Leaderboard</h3>
+        <ul id="leaderboard-list"></ul>
+    </div>
+    <div class="container">
         <h2>ICSE Marks Calculator</h2>
-        <form class="container" onsubmit="event.preventDefault(); calculate();">
-            <p>Enter your name:</p>
-            <input type="text" id="student-name" placeholder="Your Name" required>
-            <p>Enter marks (out of 80, Computers out of 100):</p>
-            <div id="subjects" class="subjects-container"></div>
-            <button type="submit">Calculate</button>
-            <button type="button">Sample Leaderboard: John - 94%, Jane - 89%</button>
-        </form>
+        <p>Enter marks (out of 80, Computers out of 100):</p>
+        <div id="subjects" class="subjects-container"></div>
+        <button onclick="calculate()">Calculate</button>
+        <button onclick="showLeaderboard()">Leaderboard</button>
         <div id="results" class="results"></div>
     </div>
-
-    <script>
-        const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
-
-        function createInputs() {
-            let subjectsContainer = document.getElementById("subjects");
-            subjectsContainer.innerHTML = ""; 
-            subjects.forEach((subj, i) => {
-                let div = document.createElement("div");
-                let label = document.createElement("label");
-                label.innerText = subj + ": ";
-                let input = document.createElement("input");
-                input.type = "number";
-                input.id = `mark${i}`;
-                input.min = 0;
-                input.max = i === 9 ? 100 : 80;
-                div.appendChild(label);
-                div.appendChild(input);
-                subjectsContainer.appendChild(div);
-            });
-        }
-
-        function calculate() {
-            let marks = [];
-            let name = document.getElementById("student-name").value.trim();
-            if (!name) {
-                alert("Please enter your name.");
-                return;
-            }
-
-            for (let i = 0; i < subjects.length; i++) {
-                let value = document.getElementById(`mark${i}`).value;
-                if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
-                    alert(`Invalid input for ${subjects[i]}. Please enter a valid number.`);
-                    return;
-                }
-                marks[i] = Number(value);
-            }
-
-            let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
-
-            let categoryAverages = {
-                "Science": (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3,
-                "Maths": updatedMarks[2],
-                "Social Studies": (updatedMarks[4] + updatedMarks[5]) / 2,
-                "English": (updatedMarks[6] + updatedMarks[7]) / 2,
-                "Second Language": updatedMarks[8],
-                "Computers": updatedMarks[9]
-            };
-
-            let totalPercent = (Object.values(categoryAverages).sort((a, b) => b - a).slice(0, 5).reduce((a, b) => a + b, 0) / 500) * 100;
-
-            let resultBox = document.getElementById("results");
-            resultBox.innerHTML = `<h3>Averages:</h3>`;
-            for (let category in categoryAverages) {
-                resultBox.innerHTML += `<p>${category}: ${categoryAverages[category].toFixed(2)}</p>`;
-            }
-            resultBox.innerHTML += `<h3>Total Percentage: ${totalPercent.toFixed(2)}%</h3>`;
-            resultBox.style.display = "block";
-        }
-    </script>
 </body>
 </html>
