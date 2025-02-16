@@ -77,7 +77,7 @@
     <div class="container">
         <input type="text" id="studentName" placeholder="Enter your name">
         <p>Enter marks (out of 80, Computers out of 100):</p>
-        <div id="subjects" class="subjects-container"></div>
+        <div id="subjects" class="subjects-container"></div> <!-- THIS DIV HOLDS THE INPUTS -->
         <button onclick="calculate()">Calculate</button>
         <button onclick="toggleLeaderboard()">Leaderboard</button>
     </div>
@@ -103,24 +103,35 @@
         const db = firebase.firestore();
 
         const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
-        
+
         function createInputs() {
+            console.log("Creating input fields..."); // Debugging log
             let subjectsContainer = document.getElementById("subjects");
+            
             if (!subjectsContainer) {
                 console.error("Subjects container not found!");
                 return;
             }
 
-            let html = "";
+            subjectsContainer.innerHTML = ""; // Clear any existing inputs
+
             subjects.forEach((subj, i) => {
-                html += `
-                    <div>
-                        <label>${subj}:</label>
-                        <input type="number" id="mark${i}" min="0" max="${i === 9 ? 100 : 80}">
-                    </div>
-                `;
+                let div = document.createElement("div");
+                let label = document.createElement("label");
+                label.innerText = subj + ": ";
+
+                let input = document.createElement("input");
+                input.type = "number";
+                input.id = `mark${i}`;
+                input.min = 0;
+                input.max = i === 9 ? 100 : 80;
+
+                div.appendChild(label);
+                div.appendChild(input);
+                subjectsContainer.appendChild(div);
             });
-            subjectsContainer.innerHTML = html;
+
+            console.log("Inputs created successfully!");
         }
 
         function calculate() {
@@ -175,9 +186,12 @@
         function toggleLeaderboard() {
             document.getElementById("leaderboard").classList.toggle("show");
         }
-        
-        // Ensure inputs are created when page loads
-        window.onload = createInputs;
+
+        window.onload = () => {
+            console.log("Window loaded. Creating input fields...");
+            createInputs();
+        };
+
         updateLeaderboard();
     </script>
 </body>
