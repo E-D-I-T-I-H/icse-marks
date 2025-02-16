@@ -5,44 +5,106 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICSE Marks Calculator</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        input { width: 60px; margin: 5px; text-align: center; }
-        button { margin: 10px; padding: 10px; cursor: pointer; }
-        .results { margin-top: 20px; font-size: 18px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        h2 {
+            margin-bottom: 10px;
+            font-size: 26px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+        }
+        .subject {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        input {
+            width: 60px;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+            text-align: center;
+        }
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            border: none;
+            background: #ff4c4c;
+            color: white;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #ff1a1a;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #222;
+            border-radius: 10px;
+        }
+        .hide {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <h2>ICSE Marks Calculator</h2>
-    
-    <div id="marksInput">
+
+    <div class="container">
         <p>Enter marks (out of 80, Computers out of 100):</p>
         <div id="subjects"></div>
         <button onclick="calculate()">Calculate</button>
     </div>
 
-    <div id="results" class="results"></div>
+    <div id="results" class="results hide"></div>
 
     <script>
         const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
-        const marks = [];
 
         function createInputs() {
             let html = "";
             subjects.forEach((subj, i) => {
-                html += `<label>${subj}: </label>
-                         <input type="number" id="mark${i}" min="0" max="${i === 9 ? 100 : 80}" required><br>`;
+                html += `
+                    <div class="subject">
+                        <label>${subj}:</label>
+                        <input type="number" id="mark${i}" min="0" max="${i === 9 ? 100 : 80}">
+                    </div>`;
             });
             document.getElementById("subjects").innerHTML = html;
         }
 
         function calculate() {
+            let marks = [];
             for (let i = 0; i < subjects.length; i++) {
                 let value = document.getElementById(`mark${i}`).value;
                 if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
-                    alert("Enter valid marks!");
+                    document.getElementById(`mark${i}`).style.border = "2px solid red";
                     return;
                 }
+                document.getElementById(`mark${i}`).style.border = "none";
                 marks[i] = Number(value);
             }
 
@@ -70,6 +132,7 @@
                 <p>Computers: ${computersAvg.toFixed(2)}</p>
                 <h3>Total Percentage: ${percentage.toFixed(2)}%</h3>
             `;
+            document.getElementById("results").classList.remove("hide");
         }
 
         createInputs();
