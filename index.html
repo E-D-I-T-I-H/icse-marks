@@ -6,13 +6,77 @@
     <title>ICSE Marks Calculator</title>
     <link href="https://fonts.googleapis.com/css2?family=Enrique&display=swap" rel="stylesheet">
     <style>
-        /* ... previous styles ... */
+        /* Reset margin and padding */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Global Styles */
+        body {
+            font-family: 'Enrique', sans-serif;
+            background: #f4f6f8;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #2f4f4f;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:disabled {
+            background-color: #f0f0f0;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            border-color: #4CAF50;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
 
         .error-message {
             color: red;
             font-size: 16px;
-            margin-top: 10px;
-            text-align: center;
+            margin-top: 15px;
         }
 
         /* Footer styling */
@@ -24,19 +88,61 @@
             font-size: 14px;
         }
 
-        /* Center everything and make it compact */
-        .container h2 {
-            margin-bottom: 15px;
+        /* Results section styling */
+        .results {
+            margin-top: 30px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .results h3 {
             font-size: 22px;
+            color: #2f4f4f;
+            margin-bottom: 20px;
         }
 
-        #leaderboard-btn, #calculate-btn {
-            font-size: 16px;
+        .results p {
+            margin-bottom: 10px;
+            font-size: 18px;
         }
 
-        /* Add smooth transition for UI elements */
-        button, input {
-            transition: all 0.3s ease;
+        /* Leaderboard styling */
+        #leaderboard {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            display: none;
+        }
+
+        #leaderboard h3 {
+            font-size: 24px;
+            color: #2f4f4f;
+        }
+
+        #leaderboard ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        #leaderboard li {
+            font-size: 18px;
+            padding: 5px;
+            margin: 5px 0;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            button {
+                width: 100%;
+            }
         }
     </style>
 </head>
