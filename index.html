@@ -53,11 +53,6 @@
             width: 80px;
             padding: 5px;
         }
-        .error {
-            color: red;
-            font-size: 12px;
-            display: block;
-        }
         .results {
             background: #2a2a2a;
             color: white;
@@ -136,13 +131,60 @@
             });
         }
 
+        async function calculate() {
+            let name = document.getElementById("name").value.trim();
+            if (!name) {
+                alert("Enter your name!");
+                return;
+            }
+
+            let totalMarks = 0, maxMarks = 0;
+            for (let i = 0; i < 10; i++) {
+                let input = document.getElementById(`mark${i}`);
+                let value = parseInt(input.value);
+                if (isNaN(value) || value < 0 || value > input.max) {
+                    alert("Invalid marks entered!");
+                    return;
+                }
+                totalMarks += value;
+                maxMarks += parseInt(input.max);
+            }
+
+            let percentage = ((totalMarks / maxMarks) * 100).toFixed(2);
+
+            // Display Result
+            let resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = `<h3>${name}'s Result</h3><p>Percentage: ${percentage}%</p>`;
+            resultsDiv.style.display = "block";
+
+            // Store in Firestore
+            try {
+                await setDoc(doc(collection(db, "leaderboard"), name), {
+                    name: name,
+                    totalPercentage: percentage
+                });
+            } catch (error) {
+                console.error("Error saving to leaderboard: ", error);
+            }
+        }
+
         async function showLeaderboard() {
             const leaderboard = document.getElementById("leaderboard");
             leaderboard.innerHTML = "<h3>Leaderboard</h3><ul>";
+            
             const querySnapshot = await getDocs(collection(db, "leaderboard"));
+            let scores = [];
+            
             querySnapshot.forEach((doc) => {
-                leaderboard.innerHTML += `<li>${doc.data().name}: ${doc.data().totalPercentage}%</li>`;
+                scores.push(doc.data());
             });
+
+            scores.sort((a, b) => b.totalPercentage - a.totalPercentage);
+
+            scores.forEach((entry) => {
+                leaderboard.innerHTML += `<li>${entry.name}: ${entry.totalPercentage}%</li>`;
+            });
+
             leaderboard.innerHTML += "</ul>";
             leaderboard.style.display = "block";
         }
