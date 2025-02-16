@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICSE Marks Calculator</title>
     <script type="module">
-        // Import Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAQr2Y8fFW3hMPIa0qaocDumhzfVwkDx_U",
             authDomain: "edith-a5bd8.firebaseapp.com",
@@ -19,7 +17,6 @@
             appId: "1:990954143521:web:ea3c8df9ed9cd0185c8860"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -53,6 +50,12 @@
         }
 
         window.calculate = async function () {
+            let name = document.getElementById("name").value.trim();
+            if (!name) {
+                alert("Please enter your name");
+                return;
+            }
+            
             let marks = [];
             let hasError = false;
 
@@ -81,21 +84,20 @@
                 "Second Language": updatedMarks[8],
                 "Computers": updatedMarks[9]
             };
-
+            
+            let totalPercentage = Object.values(categoryAverages).reduce((a, b) => a + b, 0) / 6;
+            
             let resultBox = document.getElementById("results");
-            resultBox.innerHTML = `<h3>Averages:</h3>`;
+            resultBox.innerHTML = `<h3>Total Percentage: ${totalPercentage.toFixed(2)}%</h3>`;
             for (let category in categoryAverages) {
                 resultBox.innerHTML += `<p>${category}: ${categoryAverages[category].toFixed(2)}</p>`;
             }
             resultBox.style.display = "block";
-
-            let username = prompt("Enter your name for the leaderboard:");
-            if (username) {
-                await addDoc(collection(db, "leaderboard"), {
-                    name: username,
-                    score: categoryAverages["Science"] + categoryAverages["Maths"] + categoryAverages["Social Studies"] + categoryAverages["English"] + categoryAverages["Second Language"] + categoryAverages["Computers"]
-                });
-            }
+            
+            await addDoc(collection(db, "leaderboard"), {
+                name: name,
+                score: totalPercentage
+            });
         };
 
         window.showLeaderboard = async function () {
@@ -113,7 +115,7 @@
             scores.sort((a, b) => b.score - a.score);
             scores.forEach((entry, index) => {
                 let li = document.createElement("li");
-                li.innerText = `${index + 1}. ${entry.name} - ${entry.score.toFixed(2)}`;
+                li.innerText = `${index + 1}. ${entry.name} - ${entry.score.toFixed(2)}%`;
                 leaderboardList.appendChild(li);
             });
         };
@@ -121,13 +123,10 @@
         window.onload = createInputs;
     </script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background-color: #121212; color: white; text-align: center; padding: 20px; }
-        .container { max-width: 400px; background: #1e1e1e; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1); }
-        button { margin-top: 10px; padding: 10px; background: #ff4c4c; color: white; border: none; cursor: pointer; width: 100%; transition: 0.3s; }
-        button:hover { background: #ff1a1a; }
-        .leaderboard-container { width: 250px; background: #1e1e1e; padding: 10px; border-radius: 10px; box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1); display: none; text-align: left; }
-        .leaderboard-container h3 { text-align: center; }
+        body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .container { text-align: center; }
+        .leaderboard-container { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); }
+        input { width: 100px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -137,6 +136,7 @@
     </div>
     <div class="container">
         <h2>ICSE Marks Calculator</h2>
+        <input type="text" id="name" placeholder="Enter your name">
         <p>Enter marks (out of 80, Computers out of 100):</p>
         <div id="subjects" class="subjects-container"></div>
         <button onclick="calculate()">Calculate</button>
