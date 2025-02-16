@@ -43,6 +43,16 @@
             color: white;
             text-align: center;
         }
+        .name-input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+            text-align: center;
+        }
         button {
             width: 100%;
             margin-top: 15px;
@@ -88,6 +98,7 @@
     <h2>ICSE Marks Calculator</h2>
 
     <div class="container">
+        <input type="text" id="studentName" class="name-input" placeholder="Enter your name">
         <p>Enter marks (out of 80, Computers out of 100):</p>
         <div id="subjects"></div>
         <button onclick="calculate()">Calculate</button>
@@ -117,6 +128,12 @@
         }
 
         function calculate() {
+            let name = document.getElementById("studentName").value.trim();
+            if (name === "") {
+                alert("Please enter your name.");
+                return;
+            }
+
             let marks = [];
             for (let i = 0; i < subjects.length; i++) {
                 let value = document.getElementById(`mark${i}`).value;
@@ -129,32 +146,24 @@
             }
 
             let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
-            let scienceAvg = (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3;
-            let mathsAvg = updatedMarks[2];
-            let socialAvg = (updatedMarks[4] + updatedMarks[5]) / 2;
-            let englishAvg = (updatedMarks[6] + updatedMarks[7]) / 2;
-            let secondLangAvg = updatedMarks[8];
-            let computersAvg = updatedMarks[9];
-
-            let categoryAverages = [scienceAvg, mathsAvg, socialAvg, englishAvg, secondLangAvg, computersAvg];
+            let categoryAverages = [(updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3, updatedMarks[2], (updatedMarks[4] + updatedMarks[5]) / 2, (updatedMarks[6] + updatedMarks[7]) / 2, updatedMarks[8], updatedMarks[9]];
             categoryAverages.sort((a, b) => b - a);
 
-            let top5Sum = categoryAverages.slice(0, 5).reduce((a, b) => a + b, 0);
-            let percentage = (top5Sum / 500) * 100;
-
-            document.getElementById("results").innerHTML = `
-                <h3>Results:</h3>
-                <p>Science (PCB): ${scienceAvg.toFixed(2)}</p>
-                <p>Maths: ${mathsAvg.toFixed(2)}</p>
-                <p>Social Studies: ${socialAvg.toFixed(2)}</p>
-                <p>English: ${englishAvg.toFixed(2)}</p>
-                <p>Second Language: ${secondLangAvg.toFixed(2)}</p>
-                <p>Computers: ${computersAvg.toFixed(2)}</p>
-                <h3>Total Percentage: ${percentage.toFixed(2)}%</h3>
-            `;
+            let percentage = (categoryAverages.slice(0, 5).reduce((a, b) => a + b, 0) / 500) * 100;
+            document.getElementById("results").innerHTML = `<h3>Results for ${name}:</h3><h3>Total Percentage: ${percentage.toFixed(2)}%</h3>`;
             document.getElementById("results").classList.remove("hide");
 
-            document.getElementById("leaderboardContent").innerText = `Top Score: ${percentage.toFixed(2)}%`;
+            let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+            leaderboard.push({ name, percentage });
+            leaderboard.sort((a, b) => b.percentage - a.percentage);
+            localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+            updateLeaderboard();
+        }
+
+        function updateLeaderboard() {
+            let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+            let content = leaderboard.map((entry, index) => `<p>${index + 1}. ${entry.name}: ${entry.percentage.toFixed(2)}%</p>`).join("");
+            document.getElementById("leaderboardContent").innerHTML = content || "No data yet.";
         }
 
         function toggleLeaderboard() {
@@ -162,6 +171,7 @@
         }
 
         createInputs();
+        updateLeaderboard();
     </script>
 
 </body>
