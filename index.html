@@ -144,6 +144,19 @@
         button, input {
             transition: all 0.3s ease;
         }
+
+        /* "Made by Vir" at the bottom right */
+        #footer {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Enrique', sans-serif;
+            font-weight: 400;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -156,6 +169,9 @@
         <div id="results" class="results"></div>
     </div>
     <div id="leaderboard"></div>
+
+    <!-- Footer Section with "Made by Vir" -->
+    <div id="footer">Made by Vir</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -254,8 +270,6 @@
                 }
             }
 
-            let percentage = ((totalMarks / maxMarks) * 100).toFixed(2);
-
             // Calculate average for each category
             let averages = categoryAverages.map((category) => {
                 if (category && category.length > 0) {
@@ -264,9 +278,17 @@
                 return 0;
             });
 
+            // Sort the category averages and take the top 5
+            averages.sort((a, b) => b - a); // Sorting in descending order
+
+            // Calculate final total using the top 5 averages
+            let finalTotal = averages.slice(0, 5).reduce((acc, avg) => acc + parseFloat(avg), 0);
+            let percentage = ((finalTotal / 5) * 100).toFixed(2);
+
             // Display Result
             let resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = `<h3>${name}'s Result</h3><p>Percentage: ${percentage}%</p><p>Science Avg: ${averages[0]}</p><p>Maths Avg: ${averages[1]}</p><p>Social Science Avg: ${averages[2]}</p><p>English Avg: ${averages[3]}</p><p>Second Language Avg: ${averages[4]}</p><p>Computers Avg: ${averages[5]}</p>`;
+            resultsDiv.innerHTML = `<h3>${name}'s Result</h3><p>Percentage: ${percentage}%</p>`;
+            resultsDiv.innerHTML += `<p>Top 5 Averages: ${averages.slice(0, 5).join(", ")}</p>`;
             resultsDiv.style.display = "block";
 
             // Store in Firestore
