@@ -6,7 +6,8 @@
     <title>ICSE Marks Calculator</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAQr2Y8fFW3hMPIa0qaocDumhzfVwkDx_U",
@@ -19,6 +20,20 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUser = null;
+
+        function signIn() {
+            signInWithPopup(auth, provider).then((result) => {
+                currentUser = result.user;
+                document.getElementById("name").value = currentUser.displayName;
+                document.getElementById("login-btn").style.display = "none";
+            }).catch((error) => {
+                console.error("Login failed: ", error);
+            });
+        }
 
         const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
 
@@ -50,9 +65,8 @@
         }
 
         window.calculate = async function () {
-            let name = document.getElementById("name").value.trim();
-            if (!name) {
-                alert("Please enter your name");
+            if (!currentUser) {
+                alert("Please log in first");
                 return;
             }
             
@@ -95,8 +109,8 @@
             }
             resultBox.style.display = "block";
             
-            await addDoc(collection(db, "leaderboard"), {
-                name: name,
+            await setDoc(doc(db, "leaderboard", currentUser.uid), {
+                name: currentUser.displayName,
                 score: totalPercentage
             });
         };
@@ -123,26 +137,12 @@
 
         window.onload = createInputs;
     </script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background-color: #121212; color: white; text-align: center; padding: 20px; }
-        .container { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1); }
-        .leaderboard-container { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: #1e1e1e; padding: 10px; border-radius: 10px; box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1); }
-        button { margin-top: 10px; padding: 10px; background: #ff4c4c; color: white; border: none; cursor: pointer; width: 100%; transition: 0.3s; }
-        button:hover { background: #ff1a1a; }
-        input { width: 80px; padding: 5px; }
-    </style>
+    <button id="login-btn" onclick="signIn()">Login with Google</button>
 </head>
 <body>
-    <div class="leaderboard-container" id="leaderboard">
-        <h3>Leaderboard</h3>
-        <ul id="leaderboard-list"></ul>
-    </div>
     <div class="container">
         <h2>ICSE Marks Calculator</h2>
-        <input type="text" id="name" placeholder="Enter your name">
-        <p>Enter marks (out of 80, Computers out of 100):</p>
-        <div id="subjects" class="subjects-container"></div>
+        <input type="text" id="name" placeholder="Enter your name" disabled>
         <button onclick="calculate()">Calculate</button>
         <button onclick="showLeaderboard()">Leaderboard</button>
         <div id="results" class="results"></div>
