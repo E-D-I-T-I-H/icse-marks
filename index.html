@@ -61,32 +61,13 @@
             margin-top: 15px;
             display: none;
         }
-        #leaderboard {
-            position: absolute;
-            left: 10px;
-            top: 50px;
-            width: 250px;
-            background: #1e1e1e;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-            display: none;
-        }
-        #leaderboard ul {
-            list-style: none;
-            padding: 0;
-        }
-        #leaderboard li {
-            margin: 5px 0;
-        }
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyAQr2Y8fFW3hMPIa0qaocDumhzfVwkDx_U",
+            apiKey: "YOUR_API_KEY",
             authDomain: "edith-a5bd8.firebaseapp.com",
             projectId: "edith-a5bd8",
             storageBucket: "edith-a5bd8.firebasestorage.app",
@@ -96,40 +77,6 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        let currentUser = null;
-
-        function signIn() {
-            signInAnonymously(auth).then((result) => {
-                currentUser = result.user;
-                document.getElementById("name").disabled = false;
-            }).catch((error) => {
-                console.error("Anonymous login failed: ", error);
-            });
-        }
-
-        function createInputs() {
-            const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
-            let subjectsContainer = document.getElementById("subjects");
-            subjectsContainer.innerHTML = "";
-
-            subjects.forEach((subj, i) => {
-                let div = document.createElement("div");
-                let label = document.createElement("label");
-                label.innerText = subj + ": ";
-
-                let input = document.createElement("input");
-                input.type = "number";
-                input.id = `mark${i}`;
-                input.min = 0;
-                input.max = i === 9 ? 100 : 80;
-                
-                div.appendChild(label);
-                div.appendChild(input);
-                subjectsContainer.appendChild(div);
-            });
-        }
 
         async function calculate() {
             let name = document.getElementById("name").value.trim();
@@ -138,26 +85,34 @@
                 return;
             }
 
-            let totalMarks = 0, maxMarks = 0;
-            for (let i = 0; i < 10; i++) {
-                let input = document.getElementById(`mark${i}`);
-                let value = parseInt(input.value);
-                if (isNaN(value) || value < 0 || value > input.max) {
-                    alert("Invalid marks entered!");
-                    return;
-                }
-                totalMarks += value;
-                maxMarks += parseInt(input.max);
+            let subjects = {
+                science: { values: [getValue("mark0"), getValue("mark1"), getValue("mark3")], divisor: 3, name: "Science" },
+                maths: { values: [getValue("mark2")], divisor: 1, name: "Maths" },
+                english: { values: [getValue("mark6"), getValue("mark7")], divisor: 2, name: "English" },
+                social: { values: [getValue("mark4"), getValue("mark5")], divisor: 2, name: "Social Science" },
+                secondLang: { values: [getValue("mark8")], divisor: 1, name: "Second Language" },
+                computers: { values: [getValue("mark9")], divisor: 1, name: "Computers" }
+            };
+
+            let categoryScores = [];
+            for (let key in subjects) {
+                let total = subjects[key].values.reduce((a, b) => a + b, 0);
+                let average = total / subjects[key].divisor;
+                categoryScores.push({ name: subjects[key].name, score: average });
             }
 
-            let percentage = ((totalMarks / maxMarks) * 100).toFixed(2);
+            categoryScores.sort((a, b) => b.score - a.score);
+            let bestFive = categoryScores.slice(0, 5);
 
-            // Display Result
+            let totalMarks = bestFive.reduce((sum, category) => sum + category.score, 0);
+            let percentage = ((totalMarks / 500) * 100).toFixed(2);
+
             let resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = `<h3>${name}'s Result</h3><p>Percentage: ${percentage}%</p>`;
+            resultsDiv.innerHTML = `<h3>${name}'s Result</h3>
+                                    <p>Percentage (Best 5): ${percentage}%</p>
+                                    <p><strong>Selected Categories:</strong> ${bestFive.map(c => `${c.name} (${c.score.toFixed(2)})`).join(", ")}</p>`;
             resultsDiv.style.display = "block";
 
-            // Store in Firestore
             try {
                 await setDoc(doc(collection(db, "leaderboard"), name), {
                     name: name,
@@ -168,33 +123,10 @@
             }
         }
 
-        async function showLeaderboard() {
-            const leaderboard = document.getElementById("leaderboard");
-            leaderboard.innerHTML = "<h3>Leaderboard</h3><ul>";
-            
-            const querySnapshot = await getDocs(collection(db, "leaderboard"));
-            let scores = [];
-            
-            querySnapshot.forEach((doc) => {
-                scores.push(doc.data());
-            });
-
-            scores.sort((a, b) => b.totalPercentage - a.totalPercentage);
-
-            scores.forEach((entry) => {
-                leaderboard.innerHTML += `<li>${entry.name}: ${entry.totalPercentage}%</li>`;
-            });
-
-            leaderboard.innerHTML += "</ul>";
-            leaderboard.style.display = "block";
+        function getValue(id) {
+            let value = parseInt(document.getElementById(id).value);
+            return isNaN(value) ? 0 : value;
         }
-
-        window.onload = function () {
-            signIn();
-            createInputs();
-            document.getElementById("calculate-btn").addEventListener("click", calculate);
-            document.getElementById("leaderboard-btn").addEventListener("click", showLeaderboard);
-        };
     </script>
 </head>
 <body>
@@ -202,10 +134,8 @@
         <h2>ICSE Marks Calculator</h2>
         <input type="text" id="name" placeholder="Enter your name">
         <div id="subjects" class="subjects-container"></div>
-        <button id="calculate-btn">Calculate</button>
-        <button id="leaderboard-btn">Show Leaderboard</button>
+        <button onclick="calculate()">Calculate</button>
         <div id="results" class="results"></div>
     </div>
-    <div id="leaderboard"></div>
 </body>
 </html>
