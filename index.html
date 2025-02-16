@@ -130,23 +130,35 @@
                 input.min = 0;
                 input.max = i === 9 ? 100 : 80;
                 
-                let errorSpan = document.createElement("span");
-                errorSpan.id = `error${i}`;
-                errorSpan.className = "error";
-                
                 div.appendChild(label);
                 div.appendChild(input);
-                div.appendChild(errorSpan);
                 subjectsContainer.appendChild(div);
             });
         }
 
-        function calculate() {
-            console.log("Calculating scores...");
+        async function calculate() {
+            let name = document.getElementById("name").value || "Anonymous";
+            let scores = [];
+            for (let i = 0; i < 10; i++) {
+                scores.push(parseInt(document.getElementById(`mark${i}`).value) || 0);
+            }
+            let totalPercentage = (scores.reduce((a, b) => a + b, 0) / 10).toFixed(2);
+            document.getElementById("results").innerHTML = `Total Percentage: ${totalPercentage}%`;
+            document.getElementById("results").style.display = "block";
+            
+            await setDoc(doc(db, "leaderboard", currentUser.uid), { name, totalPercentage });
         }
 
-        function showLeaderboard() {
-            console.log("Fetching leaderboard...");
+        async function showLeaderboard() {
+            let leaderboardList = document.getElementById("leaderboard-list");
+            leaderboardList.innerHTML = "";
+            let querySnapshot = await getDocs(collection(db, "leaderboard"));
+            querySnapshot.forEach(doc => {
+                let li = document.createElement("li");
+                li.textContent = `${doc.data().name}: ${doc.data().totalPercentage}%`;
+                leaderboardList.appendChild(li);
+            });
+            document.getElementById("leaderboard").style.display = "block";
         }
 
         window.onload = function () {
