@@ -4,6 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICSE Marks Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            background: #ff4c4c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #ff1a1a;
+        }
+        .subjects-container {
+            text-align: left;
+            margin-top: 10px;
+        }
+        .subjects-container div {
+            margin-bottom: 8px;
+        }
+        .subjects-container label {
+            display: inline-block;
+            width: 150px;
+        }
+        .subjects-container input {
+            width: 80px;
+            padding: 5px;
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            display: block;
+        }
+        .results {
+            background: #2a2a2a;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+        #leaderboard {
+            position: absolute;
+            left: 10px;
+            top: 50px;
+            width: 250px;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+        #leaderboard ul {
+            list-style: none;
+            padding: 0;
+        }
+        #leaderboard li {
+            margin: 5px 0;
+        }
+    </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
@@ -35,11 +116,10 @@
             });
         }
 
-        const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
-
         function createInputs() {
+            const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
             let subjectsContainer = document.getElementById("subjects");
-            subjectsContainer.innerHTML = "";
+            subjectsContainer.innerHTML = ""; 
 
             subjects.forEach((subj, i) => {
                 let div = document.createElement("div");
@@ -51,12 +131,11 @@
                 input.id = `mark${i}`;
                 input.min = 0;
                 input.max = i === 9 ? 100 : 80;
-                input.oninput = () => document.getElementById(`error${i}`).innerText = "";
-
+                
                 let errorSpan = document.createElement("span");
                 errorSpan.id = `error${i}`;
                 errorSpan.className = "error";
-
+                
                 div.appendChild(label);
                 div.appendChild(input);
                 div.appendChild(errorSpan);
@@ -64,88 +143,25 @@
             });
         }
 
-        window.calculate = async function () {
-            if (!currentUser) {
-                alert("Please log in first");
-                return;
-            }
-            
-            let marks = [];
-            let hasError = false;
-
-            for (let i = 0; i < subjects.length; i++) {
-                let value = document.getElementById(`mark${i}`).value;
-                let errorElement = document.getElementById(`error${i}`);
-
-                if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
-                    errorElement.innerText = "Please enter a valid number";
-                    hasError = true;
-                } else {
-                    errorElement.innerText = "";
-                    marks[i] = Number(value);
-                }
-            }
-
-            if (hasError) return;
-
-            let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
-
-            let categoryAverages = {
-                "Science": (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3,
-                "Maths": updatedMarks[2],
-                "Social Studies": (updatedMarks[4] + updatedMarks[5]) / 2,
-                "English": (updatedMarks[6] + updatedMarks[7]) / 2,
-                "Second Language": updatedMarks[8],
-                "Computers": updatedMarks[9]
-            };
-            
-            let sortedAverages = Object.values(categoryAverages).sort((a, b) => b - a).slice(0, 5);
-            let totalPercentage = sortedAverages.reduce((a, b) => a + b, 0) / 5;
-            
-            let resultBox = document.getElementById("results");
-            resultBox.innerHTML = `<h3>Total Percentage: ${totalPercentage.toFixed(2)}%</h3>`;
-            for (let category in categoryAverages) {
-                resultBox.innerHTML += `<p>${category}: ${categoryAverages[category].toFixed(2)}</p>`;
-            }
-            resultBox.style.display = "block";
-            
-            await setDoc(doc(db, "leaderboard", currentUser.uid), {
-                name: currentUser.displayName,
-                score: totalPercentage
-            });
+        window.onload = function () {
+            document.getElementById("login-btn").addEventListener("click", signIn);
+            createInputs();
         };
-
-        window.showLeaderboard = async function () {
-            let leaderboard = document.getElementById("leaderboard");
-            leaderboard.style.display = "block";
-            let leaderboardList = document.getElementById("leaderboard-list");
-            leaderboardList.innerHTML = "";
-
-            let querySnapshot = await getDocs(collection(db, "leaderboard"));
-            let scores = [];
-            querySnapshot.forEach((doc) => {
-                scores.push(doc.data());
-            });
-            
-            scores.sort((a, b) => b.score - a.score);
-            scores.forEach((entry, index) => {
-                let li = document.createElement("li");
-                li.innerText = `${index + 1}. ${entry.name} - ${entry.score.toFixed(2)}%`;
-                leaderboardList.appendChild(li);
-            });
-        };
-
-        window.onload = createInputs;
     </script>
-    <button id="login-btn" onclick="signIn()">Login with Google</button>
 </head>
 <body>
     <div class="container">
         <h2>ICSE Marks Calculator</h2>
         <input type="text" id="name" placeholder="Enter your name" disabled>
+        <button id="login-btn">Login with Google</button>
+        <div id="subjects" class="subjects-container"></div>
         <button onclick="calculate()">Calculate</button>
         <button onclick="showLeaderboard()">Leaderboard</button>
         <div id="results" class="results"></div>
+    </div>
+    <div id="leaderboard">
+        <h3>Leaderboard</h3>
+        <ul id="leaderboard-list"></ul>
     </div>
 </body>
 </html>
