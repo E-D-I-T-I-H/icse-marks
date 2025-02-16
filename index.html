@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -53,6 +52,19 @@
             width: 80px;
             padding: 5px;
         }
+        .error {
+            color: red;
+            font-size: 12px;
+            display: block;
+        }
+        .results {
+            background: #2a2a2a;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -63,7 +75,7 @@
         <div id="subjects" class="subjects-container"></div> 
         <button onclick="calculate()">Calculate</button>
     </div>
-    <div id="results" class="results hide"></div>
+    <div id="results" class="results"></div>
 
     <script>
         const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
@@ -82,11 +94,21 @@
                 input.id = `mark${i}`;
                 input.min = 0;
                 input.max = i === 9 ? 100 : 80;
-
+                input.oninput = () => clearError(i);
+                
+                let errorSpan = document.createElement("span");
+                errorSpan.id = `error${i}`;
+                errorSpan.className = "error";
+                
                 div.appendChild(label);
                 div.appendChild(input);
+                div.appendChild(errorSpan);
                 subjectsContainer.appendChild(div);
             });
+        }
+
+        function clearError(index) {
+            document.getElementById(`error${index}`).innerText = "";
         }
 
         function calculate() {
@@ -97,14 +119,22 @@
             }
 
             let marks = [];
+            let hasError = false;
+
             for (let i = 0; i < subjects.length; i++) {
                 let value = document.getElementById(`mark${i}`).value;
+                let errorElement = document.getElementById(`error${i}`);
+
                 if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
-                    alert(`Invalid marks entered for ${subjects[i]}. Check your inputs.`);
-                    return;
+                    errorElement.innerText = "Invalid marks";
+                    hasError = true;
+                } else {
+                    errorElement.innerText = "";
+                    marks[i] = Number(value);
                 }
-                marks[i] = Number(value);
             }
+
+            if (hasError) return;
 
             let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
             let categoryAverages = [
@@ -117,9 +147,16 @@
             ];
             categoryAverages.sort((a, b) => b - a);
             let percentage = (categoryAverages.slice(0, 5).reduce((a, b) => a + b, 0) / 500) * 100;
-
-            document.getElementById("results").innerHTML = `<h3>${name}: ${percentage.toFixed(2)}%</h3>`;
-            document.getElementById("results").classList.remove("hide");
+            
+            let resultHTML = `<h3>${name}: ${percentage.toFixed(2)}%</h3><ul>`;
+            subjects.forEach((subj, i) => {
+                resultHTML += `<li>${subj}: ${marks[i]}</li>`;
+            });
+            resultHTML += "</ul>";
+            
+            let resultBox = document.getElementById("results");
+            resultBox.innerHTML = resultHTML;
+            resultBox.style.display = "block";
         }
 
         window.onload = createInputs;
