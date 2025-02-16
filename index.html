@@ -5,6 +5,7 @@ public class MarksCalculator {
         Scanner scanner = new Scanner(System.in);
         String[] subjects = {"Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"};
         double[] marks = new double[10];
+        List<Double> percentages = new ArrayList<>();
 
         // Input Marks
         System.out.println("\u001B[1;36mEnter marks obtained (out of 80 for most, 100 for Computers):\u001B[0m");
@@ -25,56 +26,21 @@ public class MarksCalculator {
             }
         }
 
-        // Allow user to modify marks
-        while (true) {
-            System.out.println("\n\u001B[1;34mDo you want to modify any marks? Enter subject number (1-10) or 0 to continue:\u001B[0m");
-            for (int i = 0; i < subjects.length; i++) {
-                System.out.println((i + 1) + ". " + subjects[i] + " - " + marks[i]);
-            }
-            int choice = scanner.nextInt();
-            if (choice == 0) break;
-            if (choice < 1 || choice > 10) {
-                System.out.println("\u001B[1;31mInvalid choice. Try again.\u001B[0m");
-                continue;
-            }
-            
-            // Get new valid input
-            while (true) {
-                System.out.print("\u001B[1;32mEnter new marks for " + subjects[choice - 1] + " - \u001B[0m");
-                while (!scanner.hasNextDouble()) {
-                    System.out.println("\u001B[1;31mInvalid input. Please enter a numeric value.\u001B[0m");
-                    System.out.print("\u001B[1;32mEnter new marks for " + subjects[choice - 1] + " - \u001B[0m");
-                    scanner.next();
-                }
-                double newMarks = scanner.nextDouble();
-                if ((choice - 1 == 9 && newMarks <= 100) || (choice - 1 != 9 && newMarks <= 80)) {
-                    marks[choice - 1] = newMarks;
-                    break;
-                } else {
-                    System.out.println("\u001B[1;31mInvalid input. Please enter a valid mark.\u001B[0m");
-                }
-            }
-        }
-
         // Convert marks to out of 100
         for (int i = 0; i < 9; i++) {
             marks[i] += 20;
         }
-        // Special handling for Computers
         marks[9] = (marks[9] + 100) / 2;
 
         // Calculate category averages
-        double scienceAvg = (marks[0] + marks[1] + marks[3]) / 3; // PCB
-        double mathsAvg = marks[2]; // Maths
-        double socialAvg = (marks[4] + marks[5]) / 2; // History & Geography
-        double englishAvg = (marks[6] + marks[7]) / 2; // English-1 & English-2
-        double secondLangAvg = marks[8]; // Second Language
+        double scienceAvg = (marks[0] + marks[1] + marks[3]) / 3;
+        double mathsAvg = marks[2];
+        double socialAvg = (marks[4] + marks[5]) / 2;
+        double englishAvg = (marks[6] + marks[7]) / 2;
+        double secondLangAvg = marks[8];
         double computersAvg = marks[9];
 
-        // Collect all subject averages
         double[] categoryAverages = {scienceAvg, mathsAvg, socialAvg, englishAvg, secondLangAvg, computersAvg};
-
-        // Sort in descending order and pick the top 5
         Arrays.sort(categoryAverages);
         for (int i = 0, j = categoryAverages.length - 1; i < j; i++, j--) {
             double temp = categoryAverages[i];
@@ -85,10 +51,9 @@ public class MarksCalculator {
         for (int i = 0; i < 5; i++) {
             top5Sum += categoryAverages[i];
         }
-
-        // Calculate percentage
         double percentage = (top5Sum / 500) * 100;
-        
+        percentages.add(percentage);
+
         // Display Results
         System.out.println("\n\u001B[1;35mCalculated Averages:\u001B[0m");
         System.out.printf("Science (PCB): \u001B[1;33m%.2f\u001B[0m\n", scienceAvg);
@@ -97,18 +62,19 @@ public class MarksCalculator {
         System.out.printf("English: \u001B[1;33m%.2f\u001B[0m\n", englishAvg);
         System.out.printf("Second Language: \u001B[1;33m%.2f\u001B[0m\n", secondLangAvg);
         System.out.printf("Computers: \u001B[1;33m%.2f\u001B[0m\n", computersAvg);
-        
-        // Display the selected top 5 subjects
-        System.out.println("\n\u001B[1;36mTop 5 Averages Considered:\u001B[0m");
-        for (int i = 0; i < 5; i++) {
-            System.out.printf("\u001B[1;32m%.2f\u001B[0m\n", categoryAverages[i]);
-        }
-        
         System.out.printf("\n\u001B[1;31mTotal Percentage: %.2f%%\u001B[0m\n", percentage);
-        
-        System.out.println("\nPress Enter to exit...");
-        scanner.nextLine(); // Consume newline
-        scanner.nextLine(); // Wait for user to press Enter
+
+        // Leaderboard Option
+        System.out.println("\nPress 1 to view Leaderboard, or Enter to exit...");
+        scanner.nextLine();
+        String choice = scanner.nextLine();
+        if ("1".equals(choice)) {
+            System.out.println("\u001B[1;34mLeaderboard (Top Percentages):\u001B[0m");
+            Collections.sort(percentages, Collections.reverseOrder());
+            for (int i = 0; i < percentages.size(); i++) {
+                System.out.printf("%d. \u001B[1;32m%.2f%%\u001B[0m\n", i + 1, percentages.get(i));
+            }
+        }
         scanner.close();
     }
 }
