@@ -81,10 +81,28 @@
         .subjects-container {
             text-align: left;
             margin-top: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
         }
 
         .subjects-container div {
             margin-bottom: 10px;
+        }
+
+        .subjects-container label {
+            display: block;
+            font-size: 0.9rem;
+            color: #bbb;
+            text-align: left;
+        }
+
+        .subjects-container input {
+            width: 100%;
+            padding: 8px;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 4px;
         }
 
         .results {
@@ -280,7 +298,4 @@
         <button id="calculate-btn"><i>📊</i> Calculate</button>
         <button id="leaderboard-btn"><i>🏆</i> Show Leaderboard</button>
         <div id="results" class="results"></div>
-    </div>
-    <div id="leaderboard"></div>
-</body>
-</html>
+    </
