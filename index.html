@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICSE Marks Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        input { width: 60px; margin: 5px; text-align: center; }
+        button { margin: 10px; padding: 10px; cursor: pointer; }
+        .results { margin-top: 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <h2>ICSE Marks Calculator</h2>
+    
+    <div id="marksInput">
+        <p>Enter marks (out of 80, Computers out of 100):</p>
+        <div id="subjects"></div>
+        <button onclick="calculate()">Calculate</button>
+    </div>
+
+    <div id="results" class="results"></div>
+
+    <script>
+        const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
+        const marks = [];
+
+        function createInputs() {
+            let html = "";
+            subjects.forEach((subj, i) => {
+                html += `<label>${subj}: </label>
+                         <input type="number" id="mark${i}" min="0" max="${i === 9 ? 100 : 80}" required><br>`;
+            });
+            document.getElementById("subjects").innerHTML = html;
+        }
+
+        function calculate() {
+            for (let i = 0; i < subjects.length; i++) {
+                let value = document.getElementById(`mark${i}`).value;
+                if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
+                    alert("Enter valid marks!");
+                    return;
+                }
+                marks[i] = Number(value);
+            }
+
+            let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
+            let scienceAvg = (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3;
+            let mathsAvg = updatedMarks[2];
+            let socialAvg = (updatedMarks[4] + updatedMarks[5]) / 2;
+            let englishAvg = (updatedMarks[6] + updatedMarks[7]) / 2;
+            let secondLangAvg = updatedMarks[8];
+            let computersAvg = updatedMarks[9];
+
+            let categoryAverages = [scienceAvg, mathsAvg, socialAvg, englishAvg, secondLangAvg, computersAvg];
+            categoryAverages.sort((a, b) => b - a);
+
+            let top5Sum = categoryAverages.slice(0, 5).reduce((a, b) => a + b, 0);
+            let percentage = (top5Sum / 500) * 100;
+
+            document.getElementById("results").innerHTML = `
+                <h3>Results:</h3>
+                <p>Science (PCB): ${scienceAvg.toFixed(2)}</p>
+                <p>Maths: ${mathsAvg.toFixed(2)}</p>
+                <p>Social Studies: ${socialAvg.toFixed(2)}</p>
+                <p>English: ${englishAvg.toFixed(2)}</p>
+                <p>Second Language: ${secondLangAvg.toFixed(2)}</p>
+                <p>Computers: ${computersAvg.toFixed(2)}</p>
+                <h3>Total Percentage: ${percentage.toFixed(2)}%</h3>
+            `;
+        }
+
+        createInputs();
+    </script>
+
+</body>
+</html>
