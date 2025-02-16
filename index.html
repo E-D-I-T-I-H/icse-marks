@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICSE Marks Calculator</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
     <style>
         * {
             margin: 0;
@@ -17,10 +19,6 @@
             text-align: center;
             padding: 20px;
         }
-        h2 {
-            margin-bottom: 10px;
-            font-size: 26px;
-        }
         .container {
             max-width: 400px;
             margin: auto;
@@ -28,54 +26,6 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-        }
-        .subject {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-        }
-        input {
-            width: 60px;
-            padding: 8px;
-            border: none;
-            border-radius: 5px;
-            background: #333;
-            color: white;
-            text-align: center;
-        }
-        .name-input {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: none;
-            border-radius: 5px;
-            background: #333;
-            color: white;
-            text-align: center;
-        }
-        button {
-            width: 100%;
-            margin-top: 15px;
-            padding: 12px;
-            border: none;
-            background: #ff4c4c;
-            color: white;
-            font-size: 18px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        button:hover {
-            background: #ff1a1a;
-        }
-        .results {
-            margin-top: 20px;
-            padding: 15px;
-            background: #222;
-            border-radius: 10px;
-        }
-        .hide {
-            display: none;
         }
         .leaderboard {
             position: fixed;
@@ -87,6 +37,7 @@
             padding: 20px;
             box-shadow: 2px 0 10px rgba(255, 255, 255, 0.1);
             transition: left 0.3s ease;
+            overflow-y: auto;
         }
         .leaderboard.show {
             left: 0;
@@ -94,85 +45,86 @@
     </style>
 </head>
 <body>
-
     <h2>ICSE Marks Calculator</h2>
-
     <div class="container">
-        <input type="text" id="studentName" class="name-input" placeholder="Enter your name">
+        <input type="text" id="studentName" placeholder="Enter your name">
         <p>Enter marks (out of 80, Computers out of 100):</p>
         <div id="subjects"></div>
         <button onclick="calculate()">Calculate</button>
         <button onclick="toggleLeaderboard()">Leaderboard</button>
     </div>
-
     <div id="results" class="results hide"></div>
-
     <div id="leaderboard" class="leaderboard">
         <h3>Leaderboard</h3>
-        <p id="leaderboardContent">No data yet.</p>
+        <p id="leaderboardContent">Loading...</p>
     </div>
-
     <script>
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
         const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
-
+        
         function createInputs() {
             let html = "";
             subjects.forEach((subj, i) => {
-                html += `
-                    <div class="subject">
-                        <label>${subj}:</label>
-                        <input type="number" id="mark${i}" min="0" max="${i === 9 ? 100 : 80}">
-                    </div>`;
+                html += `<div><label>${subj}:</label><input type="number" id="mark${i}" min="0" max="${i === 9 ? 100 : 80}"></div>`;
             });
             document.getElementById("subjects").innerHTML = html;
         }
-
+        
         function calculate() {
             let name = document.getElementById("studentName").value.trim();
-            if (name === "") {
+            if (!name) {
                 alert("Please enter your name.");
                 return;
             }
-
             let marks = [];
             for (let i = 0; i < subjects.length; i++) {
                 let value = document.getElementById(`mark${i}`).value;
                 if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
-                    document.getElementById(`mark${i}`).style.border = "2px solid red";
                     return;
                 }
-                document.getElementById(`mark${i}`).style.border = "none";
                 marks[i] = Number(value);
             }
-
             let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
-            let categoryAverages = [(updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3, updatedMarks[2], (updatedMarks[4] + updatedMarks[5]) / 2, (updatedMarks[6] + updatedMarks[7]) / 2, updatedMarks[8], updatedMarks[9]];
+            let categoryAverages = [
+                (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3, // Science
+                updatedMarks[2], // Maths
+                (updatedMarks[4] + updatedMarks[5]) / 2, // Social Studies
+                (updatedMarks[6] + updatedMarks[7]) / 2, // English
+                updatedMarks[8], // Second Language
+                updatedMarks[9]  // Computers
+            ];
             categoryAverages.sort((a, b) => b - a);
-
-            let percentage = (categoryAverages.slice(0, 5).reduce((a, b) => a + b, 0) / 500) * 100;
-            document.getElementById("results").innerHTML = `<h3>Results for ${name}:</h3><h3>Total Percentage: ${percentage.toFixed(2)}%</h3>`;
+            let top5Sum = categoryAverages.slice(0, 5).reduce((a, b) => a + b, 0);
+            let percentage = (top5Sum / 500) * 100;
+            document.getElementById("results").innerHTML = `<h3>${name}: ${percentage.toFixed(2)}%</h3>`;
             document.getElementById("results").classList.remove("hide");
-
-            let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-            leaderboard.push({ name, percentage });
-            leaderboard.sort((a, b) => b.percentage - a.percentage);
-            localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-            updateLeaderboard();
+            db.collection("leaderboard").add({ name, percentage });
         }
-
+        
         function updateLeaderboard() {
-            let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-            let content = leaderboard.map((entry, index) => `<p>${index + 1}. ${entry.name}: ${entry.percentage.toFixed(2)}%</p>`).join("");
-            document.getElementById("leaderboardContent").innerHTML = content || "No data yet.";
+            db.collection("leaderboard").orderBy("percentage", "desc").onSnapshot(snapshot => {
+                let content = snapshot.docs.map((doc, index) => `<p>${index + 1}. ${doc.data().name}: ${doc.data().percentage.toFixed(2)}%</p>`).join("\n");
+                document.getElementById("leaderboardContent").innerHTML = content || "No data yet.";
+            });
         }
-
+        
         function toggleLeaderboard() {
             document.getElementById("leaderboard").classList.toggle("show");
         }
-
+        
         createInputs();
         updateLeaderboard();
     </script>
-
 </body>
 </html>
