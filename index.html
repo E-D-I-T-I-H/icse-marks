@@ -193,8 +193,15 @@
                 let input = document.createElement("input");
                 input.type = "number";
                 input.id = `mark${i}`;
-                input.min = 0;
-                input.max = i === 9 ? 100 : 80;
+                
+                // Set input restrictions for subjects
+                if (subj === "Computers") {
+                    input.max = 100; // Computers max is 100
+                    input.min = 0; // Computers min is 0
+                } else {
+                    input.max = 80; // All other subjects max is 80
+                    input.min = 0; // Min for all is 0
+                }
 
                 div.appendChild(label);
                 div.appendChild(input);
