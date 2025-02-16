@@ -6,112 +6,13 @@
     <title>ICSE Marks Calculator</title>
     <link href="https://fonts.googleapis.com/css2?family=Enrique&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Enrique', sans-serif;
-        }
+        /* ... previous styles ... */
 
-        body {
-            background-color: #121212;
-            color: white;
+        .error-message {
+            color: red;
+            font-size: 16px;
+            margin-top: 10px;
             text-align: center;
-            padding: 15px;
-        }
-
-        .container {
-            max-width: 400px;
-            margin: auto;
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-        }
-
-        input[type="text"],
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            background-color: #333;
-            color: white;
-            border: 1px solid #555;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        button {
-            margin-top: 10px;
-            padding: 12px;
-            background: #ff4c4c;
-            color: white;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-            border-radius: 4px;
-            transition: 0.3s ease-in-out;
-        }
-
-        button:hover {
-            background: #ff1a1a;
-        }
-
-        .subjects-container {
-            text-align: left;
-            margin-top: 10px;
-        }
-
-        .subjects-container div {
-            margin-bottom: 15px;
-        }
-
-        .subjects-container label {
-            display: inline-block;
-            width: 150px;
-            text-align: left;
-            font-size: 16px;
-        }
-
-        .subjects-container input {
-            width: 100px;
-            padding: 8px;
-            font-size: 16px;
-        }
-
-        .results {
-            background: #2a2a2a;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: none;
-            font-size: 18px;
-        }
-
-        #leaderboard {
-            position: fixed;
-            top: 70px;
-            left: 10px;
-            width: 250px;
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-            display: none;
-        }
-
-        #leaderboard ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        #leaderboard li {
-            margin: 5px 0;
-            font-size: 16px;
         }
 
         /* Footer styling */
@@ -147,6 +48,7 @@
         <button id="calculate-btn">Calculate</button>
         <button id="leaderboard-btn">Show Leaderboard</button>
         <div id="results" class="results"></div>
+        <div id="error-message" class="error-message"></div>
     </div>
     <div id="leaderboard"></div>
     <div class="footer">Made by Vir</div>
@@ -209,7 +111,44 @@
             });
         }
 
+        function validateInputs() {
+            const errorMessageDiv = document.getElementById("error-message");
+            errorMessageDiv.innerHTML = ""; // Reset error message
+
+            let isValid = true;
+            const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
+            let errorMessages = [];
+
+            subjects.forEach((subj, i) => {
+                let input = document.getElementById(`mark${i}`);
+                let value = parseInt(input.value);
+
+                if (subj === "Computers" && (value < 0 || value > 100)) {
+                    errorMessages.push("Error: Computers marks should be between 0 and 100.");
+                    isValid = false;
+                } else if (subj !== "Computers" && (value < 0 || value > 80)) {
+                    errorMessages.push(`Error: Marks for ${subj} should be between 0 and 80.`);
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                errorMessages.forEach(message => {
+                    errorMessageDiv.innerHTML += `<p>${message}</p>`;
+                });
+            }
+
+            return isValid;
+        }
+
         async function calculate() {
+            // Reset error message
+            document.getElementById("error-message").innerHTML = "";
+
+            if (!validateInputs()) {
+                return;
+            }
+
             let name = document.getElementById("name").value.trim();
             if (!name) {
                 alert("Enter your name!");
