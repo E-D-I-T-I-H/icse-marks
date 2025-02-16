@@ -5,20 +5,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICSE Marks Calculator</title>
     <style>
-        /* Your styling here (unchanged from your original code) */
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>ICSE Marks Calculator</h2>
-        <input type="text" id="name" placeholder="Enter your name">
-        <div id="subjects" class="subjects-container"></div>
-        <button id="calculate-btn">Calculate</button>
-        <button id="leaderboard-btn">Show Leaderboard</button>
-        <div id="results" class="results"></div>
-    </div>
-    <div id="leaderboard"></div>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
 
+        body {
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: #1c1c1c;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #ff4c4c;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #1e1e1e;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #ff4c4c;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px;
+            background: #ff4c4c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #ff1a1a;
+        }
+
+        button:active {
+            background-color: #e60000;
+        }
+
+        button i {
+            margin-right: 10px;
+        }
+
+        .subjects-container {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .subjects-container div {
+            margin-bottom: 10px;
+        }
+
+        .results {
+            background: #2a2a2a;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 25px;
+            display: none;
+            font-size: 1.1rem;
+        }
+
+        #leaderboard {
+            position: absolute;
+            left: 10px;
+            top: 50px;
+            width: 250px;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+            display: none;
+            color: white;
+        }
+
+        #leaderboard ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #leaderboard li {
+            margin: 5px 0;
+            font-size: 1.1rem;
+        }
+
+        #leaderboard h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #ff4c4c;
+        }
+
+        #leaderboard li::before {
+            content: "🏅 ";
+            font-size: 1.3rem;
+            color: #ff4c4c;
+        }
+    </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
@@ -36,6 +148,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+
         let currentUser = null;
 
         function signIn() {
@@ -77,15 +190,26 @@
             }
 
             let totalMarks = 0, maxMarks = 0;
-            let subjectMarks = {
-                Science: 0,
-                Maths: 0,
-                English: 0,
-                SocialScience: 0,
-                SecondLanguage: 0,
-                Computers: 0
+            let categoryAverages = {
+                "Science": 0,
+                "Maths": 0,
+                "English": 0,
+                "Social Science": 0,
+                "Second Language": 0,
+                "Computers": 0
             };
+            
+            // Calculate category averages
+            let scienceMarks = [parseInt(document.getElementById('mark0').value), parseInt(document.getElementById('mark1').value), parseInt(document.getElementById('mark3').value)];
+            categoryAverages["Science"] = ((scienceMarks.reduce((a, b) => a + b, 0)) / 3).toFixed(2);
 
+            categoryAverages["Maths"] = parseInt(document.getElementById('mark2').value);
+            categoryAverages["English"] = ((parseInt(document.getElementById('mark6').value) + parseInt(document.getElementById('mark7').value)) / 2).toFixed(2);
+            categoryAverages["Social Science"] = ((parseInt(document.getElementById('mark4').value) + parseInt(document.getElementById('mark5').value)) / 2).toFixed(2);
+            categoryAverages["Second Language"] = parseInt(document.getElementById('mark8').value);
+            categoryAverages["Computers"] = parseInt(document.getElementById('mark9').value);
+
+            // Calculate total marks
             for (let i = 0; i < 10; i++) {
                 let input = document.getElementById(`mark${i}`);
                 let value = parseInt(input.value);
@@ -93,42 +217,21 @@
                     alert("Invalid marks entered!");
                     return;
                 }
-
-                if (i < 3) subjectMarks.Science += value; // Physics, Chemistry, Biology
-                if (i === 2) subjectMarks.Maths = value; // Maths
-                if (i < 6 && i > 3) subjectMarks.SocialScience += value; // History, Geography
-                if (i === 6 || i === 7) subjectMarks.English += value; // English-1, English-2
-                if (i === 8) subjectMarks.SecondLanguage = value; // Second Language
-                if (i === 9) subjectMarks.Computers = value; // Computers
-
                 totalMarks += value;
                 maxMarks += parseInt(input.max);
             }
-
-            let averages = {
-                Science: (subjectMarks.Science / 3).toFixed(2),
-                Maths: subjectMarks.Maths.toFixed(2),
-                English: (subjectMarks.English / 2).toFixed(2),
-                SocialScience: (subjectMarks.SocialScience / 2).toFixed(2),
-                SecondLanguage: subjectMarks.SecondLanguage.toFixed(2),
-                Computers: subjectMarks.Computers.toFixed(2)
-            };
 
             let percentage = ((totalMarks / maxMarks) * 100).toFixed(2);
 
             // Display Result
             let resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = `<h3>${name}'s Result</h3>
-                                    <p>Percentage: ${percentage}%</p>
-                                    <p>Science Average: ${averages.Science}</p>
-                                    <p>Maths: ${averages.Maths}</p>
-                                    <p>English Average: ${averages.English}</p>
-                                    <p>Social Science Average: ${averages.SocialScience}</p>
-                                    <p>Second Language: ${averages.SecondLanguage}</p>
-                                    <p>Computers: ${averages.Computers}</p>`;
+            resultsDiv.innerHTML = `<h3>${name}'s Result</h3><p>Percentage: ${percentage}%</p>`;
+            Object.keys(categoryAverages).forEach(cat => {
+                resultsDiv.innerHTML += `<p>${cat}: ${categoryAverages[cat]}</p>`;
+            });
             resultsDiv.style.display = "block";
 
-            // Store only total percentage in Firestore
+            // Store in Firestore
             try {
                 await setDoc(doc(collection(db, "leaderboard"), name), {
                     name: name,
@@ -167,5 +270,16 @@
             document.getElementById("leaderboard-btn").addEventListener("click", showLeaderboard);
         };
     </script>
+</head>
+<body>
+    <div class="container">
+        <h2>ICSE Marks Calculator</h2>
+        <input type="text" id="name" placeholder="Enter your name">
+        <div id="subjects" class="subjects-container"></div>
+        <button id="calculate-btn"><i>📊</i> Calculate</button>
+        <button id="leaderboard-btn"><i>🏆</i> Show Leaderboard</button>
+        <div id="results" class="results"></div>
+    </div>
+    <div id="leaderboard"></div>
 </body>
 </html>
