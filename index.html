@@ -1,141 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICSE Marks Calculator</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            background-color: #121212;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-        .container {
-            max-width: 400px;
-            margin: auto;
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-        }
-        button {
-            margin-top: 10px;
-            padding: 10px;
-            background: #ff4c4c;
-            color: white;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.3s;
-        }
-        button:hover {
-            background: #ff1a1a;
-        }
-        .subjects-container {
-            text-align: left;
-            margin-top: 10px;
-        }
-        .subjects-container div {
-            margin-bottom: 8px;
-        }
-        .subjects-container label {
-            display: inline-block;
-            width: 150px;
-        }
-        .subjects-container input {
-            width: 80px;
-            padding: 5px;
-        }
-        .results {
-            background: #2a2a2a;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 15px;
-            display: none;
-        }
-    </style>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+<script type="module">
+    // Existing imports and firebase initialization...
 
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "edith-a5bd8.firebaseapp.com",
-            projectId: "edith-a5bd8",
-            storageBucket: "edith-a5bd8.firebasestorage.app",
-            messagingSenderId: "990954143521",
-            appId: "1:990954143521:web:ea3c8df9ed9cd0185c8860"
+    async function calculate() {
+        let name = document.getElementById("name").value.trim();
+        if (!name) {
+            alert("Enter your name!");
+            return;
+        }
+
+        let totalMarks = 0, maxMarks = 0;
+        let subjectMarks = {
+            Science: 0,
+            Maths: 0,
+            English: 0,
+            SocialScience: 0,
+            SecondLanguage: 0,
+            Computers: 0
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        async function calculate() {
-            let name = document.getElementById("name").value.trim();
-            if (!name) {
-                alert("Enter your name!");
+        // Get marks and calculate totals
+        for (let i = 0; i < 10; i++) {
+            let input = document.getElementById(`mark${i}`);
+            let value = parseInt(input.value);
+            if (isNaN(value) || value < 0 || value > input.max) {
+                alert("Invalid marks entered!");
                 return;
             }
 
-            let subjects = {
-                science: { values: [getValue("mark0"), getValue("mark1"), getValue("mark3")], divisor: 3, name: "Science" },
-                maths: { values: [getValue("mark2")], divisor: 1, name: "Maths" },
-                english: { values: [getValue("mark6"), getValue("mark7")], divisor: 2, name: "English" },
-                social: { values: [getValue("mark4"), getValue("mark5")], divisor: 2, name: "Social Science" },
-                secondLang: { values: [getValue("mark8")], divisor: 1, name: "Second Language" },
-                computers: { values: [getValue("mark9")], divisor: 1, name: "Computers" }
-            };
+            if (i < 3) subjectMarks.Science += value; // Physics, Chemistry, Biology
+            if (i === 2) subjectMarks.Maths = value; // Maths
+            if (i < 6 && i > 3) subjectMarks.SocialScience += value; // History, Geography
+            if (i === 6 || i === 7) subjectMarks.English += value; // English-1, English-2
+            if (i === 8) subjectMarks.SecondLanguage = value; // Second Language
+            if (i === 9) subjectMarks.Computers = value; // Computers
 
-            let categoryScores = [];
-            for (let key in subjects) {
-                let total = subjects[key].values.reduce((a, b) => a + b, 0);
-                let average = total / subjects[key].divisor;
-                categoryScores.push({ name: subjects[key].name, score: average });
-            }
-
-            categoryScores.sort((a, b) => b.score - a.score);
-            let bestFive = categoryScores.slice(0, 5);
-
-            let totalMarks = bestFive.reduce((sum, category) => sum + category.score, 0);
-            let percentage = ((totalMarks / 500) * 100).toFixed(2);
-
-            let resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = `<h3>${name}'s Result</h3>
-                                    <p>Percentage (Best 5): ${percentage}%</p>
-                                    <p><strong>Selected Categories:</strong> ${bestFive.map(c => `${c.name} (${c.score.toFixed(2)})`).join(", ")}</p>`;
-            resultsDiv.style.display = "block";
-
-            try {
-                await setDoc(doc(collection(db, "leaderboard"), name), {
-                    name: name,
-                    totalPercentage: percentage
-                });
-            } catch (error) {
-                console.error("Error saving to leaderboard: ", error);
-            }
+            totalMarks += value;
+            maxMarks += parseInt(input.max);
         }
 
-        function getValue(id) {
-            let value = parseInt(document.getElementById(id).value);
-            return isNaN(value) ? 0 : value;
+        // Calculate category averages
+        let averages = {
+            Science: (subjectMarks.Science / 3).toFixed(2),
+            Maths: subjectMarks.Maths.toFixed(2),
+            English: (subjectMarks.English / 2).toFixed(2),
+            SocialScience: (subjectMarks.SocialScience / 2).toFixed(2),
+            SecondLanguage: subjectMarks.SecondLanguage.toFixed(2),
+            Computers: subjectMarks.Computers.toFixed(2)
+        };
+
+        let percentage = ((totalMarks / maxMarks) * 100).toFixed(2);
+
+        // Display Result
+        let resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = `<h3>${name}'s Result</h3>
+                                <p>Percentage: ${percentage}%</p>
+                                <p>Science Average: ${averages.Science}</p>
+                                <p>Maths: ${averages.Maths}</p>
+                                <p>English Average: ${averages.English}</p>
+                                <p>Social Science Average: ${averages.SocialScience}</p>
+                                <p>Second Language: ${averages.SecondLanguage}</p>
+                                <p>Computers: ${averages.Computers}</p>`;
+        resultsDiv.style.display = "block";
+
+        // Store only final percentage in Firestore
+        try {
+            await setDoc(doc(collection(db, "leaderboard"), name), {
+                name: name,
+                totalPercentage: percentage
+            });
+        } catch (error) {
+            console.error("Error saving to leaderboard: ", error);
         }
-    </script>
-</head>
-<body>
-    <div class="container">
-        <h2>ICSE Marks Calculator</h2>
-        <input type="text" id="name" placeholder="Enter your name">
-        <div id="subjects" class="subjects-container"></div>
-        <button onclick="calculate()">Calculate</button>
-        <div id="results" class="results"></div>
-    </div>
-</body>
-</html>
+    }
+
+    // Other existing functions and window.onload...
+</script>
