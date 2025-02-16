@@ -55,6 +55,21 @@
         button:hover {
             background: #ff1a1a;
         }
+        .subjects-container {
+            text-align: left;
+            margin-top: 10px;
+        }
+        .subjects-container div {
+            margin-bottom: 8px;
+        }
+        .subjects-container label {
+            display: inline-block;
+            width: 150px;
+        }
+        .subjects-container input {
+            width: 80px;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
@@ -62,7 +77,7 @@
     <div class="container">
         <input type="text" id="studentName" placeholder="Enter your name">
         <p>Enter marks (out of 80, Computers out of 100):</p>
-        <div id="subjects"></div>
+        <div id="subjects" class="subjects-container"></div>
         <button onclick="calculate()">Calculate</button>
         <button onclick="toggleLeaderboard()">Leaderboard</button>
     </div>
@@ -161,7 +176,8 @@
             document.getElementById("leaderboard").classList.toggle("show");
         }
         
-        createInputs();
+        // Ensure inputs are created when page loads
+        window.onload = createInputs;
         updateLeaderboard();
     </script>
 </body>
