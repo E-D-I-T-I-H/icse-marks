@@ -23,6 +23,35 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
+
+        function createInputs() {
+            let subjectsContainer = document.getElementById("subjects");
+            subjectsContainer.innerHTML = "";
+
+            subjects.forEach((subj, i) => {
+                let div = document.createElement("div");
+                let label = document.createElement("label");
+                label.innerText = subj + ": ";
+
+                let input = document.createElement("input");
+                input.type = "number";
+                input.id = `mark${i}`;
+                input.min = 0;
+                input.max = i === 9 ? 100 : 80;
+                input.oninput = () => document.getElementById(`error${i}`).innerText = "";
+
+                let errorSpan = document.createElement("span");
+                errorSpan.id = `error${i}`;
+                errorSpan.className = "error";
+
+                div.appendChild(label);
+                div.appendChild(input);
+                div.appendChild(errorSpan);
+                subjectsContainer.appendChild(div);
+            });
+        }
+
         window.calculate = async function () {
             let marks = [];
             let hasError = false;
@@ -88,58 +117,17 @@
                 leaderboardList.appendChild(li);
             });
         };
+
+        window.onload = createInputs;
     </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            background-color: #121212;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .container {
-            width: 90%;
-            max-width: 400px;
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-        }
-        button {
-            margin-top: 10px;
-            padding: 10px;
-            background: #ff4c4c;
-            color: white;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.3s;
-        }
-        button:hover {
-            background: #ff1a1a;
-        }
-        .leaderboard-container {
-            width: 250px;
-            background: #1e1e1e;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-            display: none;
-            text-align: left;
-        }
-        .leaderboard-container h3 {
-            text-align: center;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background-color: #121212; color: white; text-align: center; padding: 20px; }
+        .container { max-width: 400px; background: #1e1e1e; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1); }
+        button { margin-top: 10px; padding: 10px; background: #ff4c4c; color: white; border: none; cursor: pointer; width: 100%; transition: 0.3s; }
+        button:hover { background: #ff1a1a; }
+        .leaderboard-container { width: 250px; background: #1e1e1e; padding: 10px; border-radius: 10px; box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1); display: none; text-align: left; }
+        .leaderboard-container h3 { text-align: center; }
     </style>
 </head>
 <body>
