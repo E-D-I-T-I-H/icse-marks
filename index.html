@@ -6,149 +6,7 @@
     <title>ICSE Marks Calculator</title>
     <link href="https://fonts.googleapis.com/css2?family=Enrique&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Enrique', sans-serif;
-        }
-
-        body {
-            background-color: #121212;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 350px;
-            margin: auto;
-            background: #1c1c1c;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
-        }
-
-        h2 {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            font-weight: 600;
-            color: #ff4c4c;
-        }
-
-        input[type="text"], input[type="number"] {
-            width: 80%;
-            padding: 8px;
-            margin: 8px 0;
-            border: 1px solid #333;
-            border-radius: 8px;
-            background: #1e1e1e;
-            color: white;
-            font-size: 0.9rem;
-            text-align: center;
-        }
-
-        input[type="text"]:focus, input[type="number"]:focus {
-            outline: none;
-            border-color: #ff4c4c;
-        }
-
-        button {
-            margin-top: 12px;
-            padding: 10px;
-            background: #ff4c4c;
-            color: white;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #ff1a1a;
-        }
-
-        button:active {
-            background-color: #e60000;
-        }
-
-        button i {
-            margin-right: 10px;
-        }
-
-        .subjects-container {
-            text-align: left;
-            margin-top: 15px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .subjects-container div {
-            margin-bottom: 10px;
-        }
-
-        .subjects-container label {
-            display: block;
-            font-size: 0.9rem;
-            color: #bbb;
-            text-align: left;
-        }
-
-        .subjects-container input {
-            width: 100%;
-            padding: 8px;
-            font-size: 0.9rem;
-            text-align: center;
-            margin-top: 4px;
-        }
-
-        .results {
-            background: #2a2a2a;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: none;
-            font-size: 0.95rem;
-        }
-
-        #leaderboard {
-            position: absolute;
-            left: 10px;
-            top: 50px;
-            width: 250px;
-            background: #1e1e1e;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
-            display: none;
-            color: white;
-        }
-
-        #leaderboard ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        #leaderboard li {
-            margin: 5px 0;
-            font-size: 1rem;
-        }
-
-        #leaderboard h3 {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: #ff4c4c;
-        }
-
-        #leaderboard li::before {
-            content: "🏅 ";
-            font-size: 1.2rem;
-            color: #ff4c4c;
-        }
+        /* Your existing CSS... */
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -217,16 +75,20 @@
                 "Second Language": 0,
                 "Computers": 0
             };
-            
+
             // Calculate category averages
-            let scienceMarks = [parseInt(document.getElementById('mark0').value), parseInt(document.getElementById('mark1').value), parseInt(document.getElementById('mark3').value)];
+            let scienceMarks = [
+                parseInt(document.getElementById('mark0').value) + 20, 
+                parseInt(document.getElementById('mark1').value) + 20, 
+                parseInt(document.getElementById('mark3').value) + 20
+            ];
             categoryAverages["Science"] = ((scienceMarks.reduce((a, b) => a + b, 0)) / 3).toFixed(2);
 
-            categoryAverages["Maths"] = parseInt(document.getElementById('mark2').value);
-            categoryAverages["English"] = ((parseInt(document.getElementById('mark6').value) + parseInt(document.getElementById('mark7').value)) / 2).toFixed(2);
-            categoryAverages["Social Science"] = ((parseInt(document.getElementById('mark4').value) + parseInt(document.getElementById('mark5').value)) / 2).toFixed(2);
-            categoryAverages["Second Language"] = parseInt(document.getElementById('mark8').value);
-            categoryAverages["Computers"] = parseInt(document.getElementById('mark9').value);
+            categoryAverages["Maths"] = parseInt(document.getElementById('mark2').value) + 20;
+            categoryAverages["English"] = ((parseInt(document.getElementById('mark6').value) + parseInt(document.getElementById('mark7').value)) / 2 + 20).toFixed(2);
+            categoryAverages["Social Science"] = ((parseInt(document.getElementById('mark4').value) + parseInt(document.getElementById('mark5').value)) / 2 + 20).toFixed(2);
+            categoryAverages["Second Language"] = parseInt(document.getElementById('mark8').value) + 20;
+            categoryAverages["Computers"] = ((parseInt(document.getElementById('mark9').value) + 100) / 2).toFixed(2);
 
             // Calculate total marks
             for (let i = 0; i < 10; i++) {
@@ -272,6 +134,12 @@
                 scores.push(doc.data());
             });
 
+            if (scores.length === 0) {
+                leaderboard.innerHTML += "<li>No data available</li>";
+                leaderboard.style.display = "block";
+                return;
+            }
+
             scores.sort((a, b) => b.totalPercentage - a.totalPercentage);
 
             scores.forEach((entry) => {
@@ -294,8 +162,12 @@
     <div class="container">
         <h2>ICSE Marks Calculator</h2>
         <input type="text" id="name" placeholder="Enter your name">
-        <div id="subjects" class="subjects-container"></div>
-        <button id="calculate-btn"><i>📊</i> Calculate</button>
-        <button id="leaderboard-btn"><i>🏆</i> Show Leaderboard</button>
+        <div id="subjects"></div>
+        <button id="calculate-btn">Calculate</button>
+        <button id="leaderboard-btn">Show Leaderboard</button>
+        
         <div id="results" class="results"></div>
-    </
+        <div id="leaderboard"></div>
+    </div>
+</body>
+</html>
