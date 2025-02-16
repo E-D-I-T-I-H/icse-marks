@@ -149,7 +149,7 @@
         <div id="results" class="results"></div>
     </div>
     <div id="leaderboard"></div>
-    <div class="footer">Made by Vir ♡</div>
+    <div class="footer">Made by Vir</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -212,21 +212,30 @@
             let averages = [];
 
             // Add category averages after the modification (+20 rule)
-            averages.push(((parseInt(document.getElementById("mark0").value) + 20) + 
-                           (parseInt(document.getElementById("mark1").value) + 20) + 
-                           (parseInt(document.getElementById("mark3").value) + 20)) / 3); // Science avg
+            let physics = parseInt(document.getElementById("mark0").value) + 20;
+            let chemistry = parseInt(document.getElementById("mark1").value) + 20;
+            let biology = parseInt(document.getElementById("mark3").value) + 20;
+            let scienceAvg = (physics + chemistry + biology) / 3; // Science avg
+            averages.push(scienceAvg);
 
-            averages.push(parseInt(document.getElementById("mark2").value) + 20); // Maths avg
+            let maths = parseInt(document.getElementById("mark2").value) + 20;
+            averages.push(maths); // Maths avg
 
-            averages.push(((parseInt(document.getElementById("mark4").value) + 20) + 
-                           (parseInt(document.getElementById("mark5").value) + 20)) / 2); // Social Science avg
+            let history = parseInt(document.getElementById("mark4").value) + 20;
+            let geography = parseInt(document.getElementById("mark5").value) + 20;
+            let socialScienceAvg = (history + geography) / 2; // Social Science avg
+            averages.push(socialScienceAvg);
 
-            averages.push(((parseInt(document.getElementById("mark6").value) + 20) + 
-                           (parseInt(document.getElementById("mark7").value) + 20)) / 2); // English avg
+            let english1 = parseInt(document.getElementById("mark6").value) + 20;
+            let english2 = parseInt(document.getElementById("mark7").value) + 20;
+            let englishAvg = (english1 + english2) / 2; // English avg
+            averages.push(englishAvg);
 
-            averages.push(parseInt(document.getElementById("mark8").value)); // Second Language avg
+            let secondLanguage = parseInt(document.getElementById("mark8").value);
+            averages.push(secondLanguage); // Second Language avg
 
-            averages.push((parseInt(document.getElementById("mark9").value) + 100) / 2); // Computers avg
+            let computers = (parseInt(document.getElementById("mark9").value) + 100) / 2; // Computers avg
+            averages.push(computers);
 
             // Sort averages in descending order
             averages.sort((a, b) => b - a);
@@ -240,12 +249,12 @@
             // Display Result
             let resultsDiv = document.getElementById("results");
             resultsDiv.innerHTML = `<h3>${name}'s Result</h3>
-                                    <p>Science Avg: ${averages[0].toFixed(2)}</p>
-                                    <p>Maths Avg: ${averages[1].toFixed(2)}</p>
-                                    <p>Social Science Avg: ${averages[2].toFixed(2)}</p>
-                                    <p>English Avg: ${averages[3].toFixed(2)}</p>
-                                    <p>Second Language Avg: ${averages[4].toFixed(2)}</p>
-                                    <p>Computers Avg: ${averages[5].toFixed(2)}</p>
+                                    <p>Science Avg: ${scienceAvg.toFixed(2)}</p>
+                                    <p>Maths Avg: ${maths.toFixed(2)}</p>
+                                    <p>Social Science Avg: ${socialScienceAvg.toFixed(2)}</p>
+                                    <p>English Avg: ${englishAvg.toFixed(2)}</p>
+                                    <p>Second Language Avg: ${secondLanguage.toFixed(2)}</p>
+                                    <p>Computers Avg: ${computers.toFixed(2)}</p>
                                     <p><strong>Total Percentage: ${percentage}%</strong></p>`;
             resultsDiv.style.display = "block";
 
