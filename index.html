@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -17,6 +18,7 @@
             padding: 20px;
         }
         .container {
+            width: 90%;
             max-width: 400px;
             margin: auto;
             background: #1e1e1e;
@@ -51,11 +53,18 @@
         .subjects-container input {
             width: 80px;
             padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
         .error {
             color: red;
             font-size: 12px;
             display: block;
+            margin-top: 3px;
+        }
+        input.error-highlight {
+            border-color: red;
+            background-color: rgba(255, 0, 0, 0.1);
         }
         .results {
             background: #2a2a2a;
@@ -69,11 +78,11 @@
 </head>
 <body>
     <h2>ICSE Marks Calculator</h2>
-    <div class="container">
+    <form class="container" onsubmit="event.preventDefault(); calculate();">
         <p>Enter marks (out of 80, Computers out of 100):</p>
-        <div id="subjects" class="subjects-container"></div> 
-        <button onclick="calculate()">Calculate</button>
-    </div>
+        <div id="subjects" class="subjects-container"></div>
+        <button type="submit">Calculate</button>
+    </form>
     <div id="results" class="results"></div>
 
     <script>
@@ -81,8 +90,7 @@
 
         function createInputs() {
             let subjectsContainer = document.getElementById("subjects");
-            subjectsContainer.innerHTML = ""; 
-
+            subjectsContainer.innerHTML = "";
             subjects.forEach((subj, i) => {
                 let div = document.createElement("div");
                 let label = document.createElement("label");
@@ -93,8 +101,9 @@
                 input.id = `mark${i}`;
                 input.min = 0;
                 input.max = i === 9 ? 100 : 80;
+                input.step = 1;
                 input.oninput = () => clearError(i);
-                
+
                 let errorSpan = document.createElement("span");
                 errorSpan.id = `error${i}`;
                 errorSpan.className = "error";
@@ -107,27 +116,38 @@
         }
 
         function clearError(index) {
-            document.getElementById(`error${index}`).innerText = "";
+            let errorElement = document.getElementById(`error${index}`);
+            let inputElement = document.getElementById(`mark${index}`);
+            errorElement.innerText = "";
+            inputElement.classList.remove("error-highlight");
         }
 
         function calculate() {
             let marks = [];
             let hasError = false;
+            let firstErrorField = null;
 
             for (let i = 0; i < subjects.length; i++) {
-                let value = document.getElementById(`mark${i}`).value;
+                let inputElement = document.getElementById(`mark${i}`);
                 let errorElement = document.getElementById(`error${i}`);
-
-                if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
+                let value = inputElement.value;
+                
+                if (isNaN(value) || value === "" || value < 0 || value > (i === 9 ? 100 : 80)) {
                     errorElement.innerText = "Please enter a number ≤ " + (i === 9 ? "100" : "80");
+                    inputElement.classList.add("error-highlight");
+                    if (!firstErrorField) firstErrorField = inputElement;
                     hasError = true;
                 } else {
                     errorElement.innerText = "";
+                    inputElement.classList.remove("error-highlight");
                     marks[i] = Number(value);
                 }
             }
-
-            if (hasError) return;
+            
+            if (hasError) {
+                firstErrorField?.focus();
+                return;
+            }
 
             let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
             
