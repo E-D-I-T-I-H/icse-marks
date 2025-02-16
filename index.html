@@ -4,6 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICSE Marks Calculator</title>
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAQr2Y8fFW3hMPIa0qaocDumhzfVwkDx_U",
+            authDomain: "edith-a5bd8.firebaseapp.com",
+            projectId: "edith-a5bd8",
+            storageBucket: "edith-a5bd8.appspot.com",
+            messagingSenderId: "990954143521",
+            appId: "1:990954143521:web:ea3c8df9ed9cd0185c8860"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function updateLeaderboard(name, score) {
+            try {
+                await addDoc(collection(db, "leaderboard"), { name, score });
+                loadLeaderboard(); 
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+        }
+
+        async function loadLeaderboard() {
+            const leaderboardList = document.getElementById("leaderboard-list");
+            leaderboardList.innerHTML = "";
+            const q = query(collection(db, "leaderboard"), orderBy("score", "desc"));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach(doc => {
+                let li = document.createElement("li");
+                li.innerText = `${doc.data().name}: ${doc.data().score}`;
+                leaderboardList.appendChild(li);
+            });
+            document.getElementById("leaderboard").style.display = "block";
+        }
+
+        window.loadLeaderboard = loadLeaderboard;
+        window.updateLeaderboard = updateLeaderboard;
+    </script>
     <style>
         * {
             margin: 0;
@@ -86,7 +130,7 @@
         }
     </style>
 </head>
-<body>
+<body onload="loadLeaderboard()">
     <div class="main-container">
         <div class="leaderboard" id="leaderboard">
             <h3>Leaderboard</h3>
@@ -95,6 +139,8 @@
         <div>
             <h2>ICSE Marks Calculator</h2>
             <form class="container" onsubmit="event.preventDefault(); calculate();">
+                <p>Enter your name:</p>
+                <input type="text" id="student-name" placeholder="Your Name" required>
                 <p>Enter marks (out of 80, Computers out of 100):</p>
                 <div id="subjects" class="subjects-container"></div>
                 <button type="submit">Calculate</button>
@@ -105,76 +151,24 @@
     </div>
 
     <script>
-        const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
-        const leaderboardData = [
-            { name: "Alice", score: 95 },
-            { name: "Bob", score: 89 },
-            { name: "Charlie", score: 92 },
-            { name: "Dave", score: 85 }
-        ];
-
-        function createInputs() {
-            let subjectsContainer = document.getElementById("subjects");
-            subjectsContainer.innerHTML = "";
-            subjects.forEach((subj, i) => {
-                let div = document.createElement("div");
-                let label = document.createElement("label");
-                label.innerText = subj + ": ";
-
-                let input = document.createElement("input");
-                input.type = "number";
-                input.id = `mark${i}`;
-                input.min = 0;
-                input.max = i === 9 ? 100 : 80;
-                input.step = 1;
-                input.oninput = () => clearError(i);
-
-                let errorSpan = document.createElement("span");
-                errorSpan.id = `error${i}`;
-                errorSpan.className = "error";
-                
-                div.appendChild(label);
-                div.appendChild(input);
-                div.appendChild(errorSpan);
-                subjectsContainer.appendChild(div);
-            });
-        }
-
-        function clearError(index) {
-            let errorElement = document.getElementById(`error${index}`);
-            errorElement.innerText = "";
-        }
-
         function calculate() {
-            let resultBox = document.getElementById("results");
-            resultBox.style.display = "block";
-
-            let averages = [85, 90, 88, 92, 87]; 
+            let name = document.getElementById("student-name").value;
+            if (!name) {
+                alert("Please enter your name");
+                return;
+            }
+            let averages = [85, 90, 88, 92, 87];
             let totalPercent = (averages.reduce((sum, val) => sum + val, 0) / 500) * 100;
-            
-            resultBox.innerHTML = `<h3>Averages:</h3>`;
-            resultBox.innerHTML += `<p>Science: ${averages[0]}</p>`;
-            resultBox.innerHTML += `<p>Maths: ${averages[1]}</p>`;
-            resultBox.innerHTML += `<p>Social Studies: ${averages[2]}</p>`;
-            resultBox.innerHTML += `<p>English: ${averages[3]}</p>`;
-            resultBox.innerHTML += `<p>Second Language: ${averages[4]}</p>`;
-            resultBox.innerHTML += `<h3>Total Percentage: ${totalPercent.toFixed(2)}%</h3>`;
+            document.getElementById("results").innerHTML = `<h3>Averages:</h3>
+                <p>Science: ${averages[0]}</p>
+                <p>Maths: ${averages[1]}</p>
+                <p>Social Studies: ${averages[2]}</p>
+                <p>English: ${averages[3]}</p>
+                <p>Second Language: ${averages[4]}</p>
+                <h3>Total Percentage: ${totalPercent.toFixed(2)}%</h3>`;
+            document.getElementById("results").style.display = "block";
+            updateLeaderboard(name, totalPercent.toFixed(2));
         }
-
-        function showLeaderboard() {
-            let leaderboard = document.getElementById("leaderboard");
-            let list = document.getElementById("leaderboard-list");
-            list.innerHTML = "";
-            leaderboardData.sort((a, b) => b.score - a.score);
-            leaderboardData.forEach(entry => {
-                let li = document.createElement("li");
-                li.innerText = `${entry.name}: ${entry.score}`;
-                list.appendChild(li);
-            });
-            leaderboard.style.display = "block";
-        }
-
-        window.onload = createInputs;
     </script>
 </body>
 </html>
