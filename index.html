@@ -39,7 +39,7 @@
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach(doc => {
                 let li = document.createElement("li");
-                li.innerText = `${doc.data().name}: ${doc.data().score}`;
+                li.innerText = `${doc.data().name}: ${doc.data().score}%`;
                 leaderboardList.appendChild(li);
             });
             document.getElementById("leaderboard").style.display = "block";
@@ -130,7 +130,7 @@
         }
     </style>
 </head>
-<body onload="loadLeaderboard()">
+<body onload="loadLeaderboard(); createInputs();">
     <div class="main-container">
         <div class="leaderboard" id="leaderboard">
             <h3>Leaderboard</h3>
@@ -151,24 +151,59 @@
     </div>
 
     <script>
+        const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
+
+        function createInputs() {
+            let subjectsContainer = document.getElementById("subjects");
+            subjectsContainer.innerHTML = ""; 
+            subjects.forEach((subj, i) => {
+                let div = document.createElement("div");
+                let label = document.createElement("label");
+                label.innerText = subj + ": ";
+                let input = document.createElement("input");
+                input.type = "number";
+                input.id = `mark${i}`;
+                input.min = 0;
+                input.max = i === 9 ? 100 : 80;
+                div.appendChild(label);
+                div.appendChild(input);
+                subjectsContainer.appendChild(div);
+            });
+        }
+
         function calculate() {
-            let name = document.getElementById("student-name").value;
+            let marks = [];
+            let name = document.getElementById("student-name").value.trim();
             if (!name) {
-                alert("Please enter your name");
+                alert("Please enter your name.");
                 return;
             }
-            let averages = [85, 90, 88, 92, 87];
-            let totalPercent = (averages.reduce((sum, val) => sum + val, 0) / 500) * 100;
-            document.getElementById("results").innerHTML = `<h3>Averages:</h3>
-                <p>Science: ${averages[0]}</p>
-                <p>Maths: ${averages[1]}</p>
-                <p>Social Studies: ${averages[2]}</p>
-                <p>English: ${averages[3]}</p>
-                <p>Second Language: ${averages[4]}</p>
-                <h3>Total Percentage: ${totalPercent.toFixed(2)}%</h3>`;
-            document.getElementById("results").style.display = "block";
-            updateLeaderboard(name, totalPercent.toFixed(2));
-        }
-    </script>
-</body>
-</html>
+
+            for (let i = 0; i < subjects.length; i++) {
+                let value = document.getElementById(`mark${i}`).value;
+                if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
+                    alert(`Invalid input for ${subjects[i]}. Please enter a valid number.`);
+                    return;
+                }
+                marks[i] = Number(value);
+            }
+
+            let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
+
+            let categoryAverages = {
+                "Science": (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3,
+                "Maths": updatedMarks[2],
+                "Social Studies": (updatedMarks[4] + updatedMarks[5]) / 2,
+                "English": (updatedMarks[6] + updatedMarks[7]) / 2,
+                "Second Language": updatedMarks[8],
+                "Computers": updatedMarks[9]
+            };
+
+            let totalPercent = (Object.values(categoryAverages).sort((a, b) => b - a).slice(0, 5).reduce((a, b) => a + b, 0) / 500) * 100;
+
+            let resultBox = document.getElementById("results");
+            resultBox.innerHTML = `<h3>Averages:</h3>`;
+            for (let category in categoryAverages) {
+                resultBox.innerHTML += `<p>${category}: ${categoryAverages[category].toFixed(2)}</p>`;
+            }
+            resultBox.innerHTML += `<h3>Total Percentage: ${totalPercent.toFixed(2)}
