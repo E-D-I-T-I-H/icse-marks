@@ -67,6 +67,20 @@
         .hide {
             display: none;
         }
+        .leaderboard {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 250px;
+            height: 100%;
+            background: #1e1e1e;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(255, 255, 255, 0.1);
+            transition: left 0.3s ease;
+        }
+        .leaderboard.show {
+            left: 0;
+        }
     </style>
 </head>
 <body>
@@ -77,9 +91,15 @@
         <p>Enter marks (out of 80, Computers out of 100):</p>
         <div id="subjects"></div>
         <button onclick="calculate()">Calculate</button>
+        <button onclick="toggleLeaderboard()">Leaderboard</button>
     </div>
 
     <div id="results" class="results hide"></div>
+
+    <div id="leaderboard" class="leaderboard">
+        <h3>Leaderboard</h3>
+        <p id="leaderboardContent">No data yet.</p>
+    </div>
 
     <script>
         const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
@@ -133,6 +153,12 @@
                 <h3>Total Percentage: ${percentage.toFixed(2)}%</h3>
             `;
             document.getElementById("results").classList.remove("hide");
+
+            document.getElementById("leaderboardContent").innerText = `Top Score: ${percentage.toFixed(2)}%`;
+        }
+
+        function toggleLeaderboard() {
+            document.getElementById("leaderboard").classList.toggle("show");
         }
 
         createInputs();
