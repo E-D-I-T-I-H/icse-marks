@@ -5,138 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICSE Marks Calculator</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
         body {
-            background-color: #121212;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: white;
             text-align: center;
             padding: 20px;
-        }
-        h2 {
-            margin-bottom: 10px;
-            font-size: 26px;
         }
         .container {
-            max-width: 400px;
+            max-width: 500px;
             margin: auto;
-            background: #1e1e1e;
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-        }
-        .subject {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
         }
         input {
-            width: 60px;
-            padding: 8px;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
             border: none;
             border-radius: 5px;
-            background: #333;
-            color: white;
-            text-align: center;
+            font-size: 16px;
         }
         button {
-            width: 100%;
-            margin-top: 15px;
-            padding: 12px;
-            border: none;
-            background: #ff4c4c;
+            background: #ff7b00;
             color: white;
-            font-size: 18px;
+            padding: 10px 15px;
+            border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: 0.3s;
+            font-size: 18px;
         }
         button:hover {
-            background: #ff1a1a;
-        }
-        .results {
-            margin-top: 20px;
-            padding: 15px;
-            background: #222;
-            border-radius: 10px;
-        }
-        .hide {
-            display: none;
+            background: #ff9800;
         }
     </style>
 </head>
 <body>
-
-    <h2>ICSE Marks Calculator</h2>
-
     <div class="container">
-        <p>Enter marks (out of 80, Computers out of 100):</p>
-        <div id="subjects"></div>
-        <button onclick="calculate()">Calculate</button>
+        <h1>ICSE Marks Calculator</h1>
+        <p>Enter marks obtained (out of 80 for subjects, 100 for Computers):</p>
+        <form id="marksForm">
+            <input type="number" id="phy" placeholder="Physics" min="0" max="80" required>
+            <input type="number" id="chem" placeholder="Chemistry" min="0" max="80" required>
+            <input type="number" id="maths" placeholder="Maths" min="0" max="80" required>
+            <input type="number" id="bio" placeholder="Biology" min="0" max="80" required>
+            <input type="number" id="his" placeholder="History" min="0" max="80" required>
+            <input type="number" id="geo" placeholder="Geography" min="0" max="80" required>
+            <input type="number" id="eng1" placeholder="English-1" min="0" max="80" required>
+            <input type="number" id="eng2" placeholder="English-2" min="0" max="80" required>
+            <input type="number" id="secLang" placeholder="Second Language" min="0" max="80" required>
+            <input type="number" id="comp" placeholder="Computers" min="0" max="100" required>
+            <button type="button" onclick="calculateMarks()">Calculate</button>
+        </form>
+        <h2 id="result"></h2>
     </div>
 
-    <div id="results" class="results hide"></div>
-
     <script>
-        const subjects = ["Physics", "Chemistry", "Maths", "Biology", "History", "Geography", "English-1", "English-2", "Second Language", "Computers"];
+        function calculateMarks() {
+            let marks = [
+                parseFloat(document.getElementById("phy").value) + 20,
+                parseFloat(document.getElementById("chem").value) + 20,
+                parseFloat(document.getElementById("maths").value) + 20,
+                parseFloat(document.getElementById("bio").value) + 20,
+                parseFloat(document.getElementById("his").value) + 20,
+                parseFloat(document.getElementById("geo").value) + 20,
+                (parseFloat(document.getElementById("eng1").value) + 20 + parseFloat(document.getElementById("eng2").value) + 20) / 2,
+                parseFloat(document.getElementById("secLang").value) + 20,
+                (parseFloat(document.getElementById("comp").value) + 100) / 2
+            ];
 
-        function createInputs() {
-            let html = "";
-            subjects.forEach((subj, i) => {
-                html += `
-                    <div class="subject">
-                        <label>${subj}:</label>
-                        <input type="number" id="mark${i}" min="0" max="${i === 9 ? 100 : 80}">
-                    </div>`;
-            });
-            document.getElementById("subjects").innerHTML = html;
-        }
-
-        function calculate() {
-            let marks = [];
-            for (let i = 0; i < subjects.length; i++) {
-                let value = document.getElementById(`mark${i}`).value;
-                if (value === "" || isNaN(value) || value < 0 || value > (i === 9 ? 100 : 80)) {
-                    document.getElementById(`mark${i}`).style.border = "2px solid red";
-                    return;
-                }
-                document.getElementById(`mark${i}`).style.border = "none";
-                marks[i] = Number(value);
-            }
-
-            let updatedMarks = marks.map((m, i) => i === 9 ? (m + 100) / 2 : m + 20);
-            let scienceAvg = (updatedMarks[0] + updatedMarks[1] + updatedMarks[3]) / 3;
-            let mathsAvg = updatedMarks[2];
-            let socialAvg = (updatedMarks[4] + updatedMarks[5]) / 2;
-            let englishAvg = (updatedMarks[6] + updatedMarks[7]) / 2;
-            let secondLangAvg = updatedMarks[8];
-            let computersAvg = updatedMarks[9];
+            let scienceAvg = (marks[0] + marks[1] + marks[3]) / 3;
+            let mathsAvg = marks[2];
+            let socialAvg = (marks[4] + marks[5]) / 2;
+            let englishAvg = marks[6];
+            let secondLangAvg = marks[7];
+            let computersAvg = marks[8];
 
             let categoryAverages = [scienceAvg, mathsAvg, socialAvg, englishAvg, secondLangAvg, computersAvg];
             categoryAverages.sort((a, b) => b - a);
-
             let top5Sum = categoryAverages.slice(0, 5).reduce((a, b) => a + b, 0);
             let percentage = (top5Sum / 500) * 100;
 
-            document.getElementById("results").innerHTML = `
-                <h3>Results:</h3>
-                <p>Science (PCB): ${scienceAvg.toFixed(2)}</p>
-                <p>Maths: ${mathsAvg.toFixed(2)}</p>
-                <p>Social Studies: ${socialAvg.toFixed(2)}</p>
-                <p>English: ${englishAvg.toFixed(2)}</p>
-                <p>Second Language: ${secondLangAvg.toFixed(2)}</p>
-                <p>Computers: ${computersAvg.toFixed(2)}</p>
-                <h3>Total Percentage: ${percentage.toFixed(2)}%</h3>
-            `;
-            document.getElementById("results").classList.remove("hide");
+            document.getElementById("result").innerHTML = `Total Percentage: ${percentage.toFixed(2)}%`;
         }
-
-        createInputs();
     </script>
-
 </body>
 </html>
